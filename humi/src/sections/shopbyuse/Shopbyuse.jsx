@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import "./ShopByUse.css";
+import "./Shopbyuse.css";
 import { Assets } from "../../assets/Assests";
 
 const ITEMS = [
@@ -66,7 +66,7 @@ function ShopCard({ item }) {
     );
 }
 
-export default function ShopByUse() {
+export default function Shopbyuse() {
     return (
         <div className="shop-page">
             <section className="shop">

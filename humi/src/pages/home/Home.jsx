@@ -4,7 +4,7 @@ import Faqaccordion from '../../sections/faqsection/Faqaccordion'
 import './Home.css'
 import Fragrancehero from '../../sections/fragance/Fragnancehero'
 import Insights from '../../sections/insights/Insights'
-import ShopByUse from '../../sections/shopbyuse/Shopbyuse'
+import Shopbyuse from '../../sections/shopbyuse/Shopbyuse'
 import ProductGrid from '../../sections/products/Productgrid'
 
 const Home = () => {
@@ -14,7 +14,7 @@ const Home = () => {
         <Hero/>
       </div>
       <div className="shopbyuse-section">
-        <ShopByUse/>
+        <Shopbyuse/>
       </div>
       <div className="products-display">
         <ProductGrid/>
