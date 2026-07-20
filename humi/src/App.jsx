@@ -8,7 +8,7 @@ import Home from './pages/home/Home'
 import Auth from './features/Auth/Auth'
 import ShopPage from './pages/shop/Shoppage'
 import { Context } from './context/Context'
-import CartPage from './pages/cart/Cartpage'
+import Cartpage from './pages/cart/Cartpage'
 import ContactPage from './pages/contact/ContactPage'
 import GiftPage from './pages/gift/Giftpage'
 import CollectionPage from './pages/collection/Collectionpage'
@@ -28,7 +28,7 @@ function App() {
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/shop' element={<ShopPage />} />
-          <Route path='/cart' element={<CartPage />} />
+          <Route path='/cart' element={<Cartpage />} />
           <Route path='/contact' element={<ContactPage />} />
           <Route path='/gift' element={<GiftPage />} />
           <Route path='/collections' element={<CollectionPage />} />

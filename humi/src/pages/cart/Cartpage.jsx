@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./CartPage.css";
+import "./Cartpage.css";
 import { useContext } from "react";
 import { Context } from "../../context/Context";
 
