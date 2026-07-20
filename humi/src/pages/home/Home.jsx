@@ -1,6 +1,6 @@
 import React from 'react'
 import Hero from '../../sections/herosection/Hero'
-import FAQAccordion from '../../sections/faqsection/Faqaccordion'
+import Faqaccordion from '../../sections/faqsection/Faqaccordion'
 import './Home.css'
 import Fragrancehero from '../../sections/fragance/Fragnancehero'
 import Insights from '../../sections/insights/Insights'
@@ -27,7 +27,7 @@ const Home = () => {
       </div>
       <div className="faq-section">
 
-        <FAQAccordion/>
+        <Faqaccordion/>
 
       </div>
     </div>

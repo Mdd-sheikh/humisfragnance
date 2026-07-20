@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./FAQAccordion.css";
+import "./Faqaccordion.css";
 
 const FAQS = [
   {
@@ -43,7 +43,7 @@ function PlusIcon() {
   );
 }
 
-export default function FAQAccordion() {
+export default function FAqaccordion() {
   const [openIndex, setOpenIndex] = useState(null);
 
   const toggle = (i) => setOpenIndex((prev) => (prev === i ? null : i));
