@@ -6,11 +6,11 @@ import Navbar from './components/navbar/Navbar'
 import { Routes, Route } from 'react-router-dom'
 import Home from './pages/home/Home'
 import Auth from './features/Auth/Auth'
-import ShopPage from './pages/shop/Shoppage'
+import Shoppage from './pages/shop/Shoppage'
 import { Context } from './context/Context'
 import Cartpage from './pages/cart/Cartpage'
 import ContactPage from './pages/contact/ContactPage'
-import GiftPage from './pages/gift/Giftpage'
+import Giftpage from './pages/gift/Giftpage'
 import CollectionPage from './pages/collection/Collectionpage'
 import Aboutpage from './pages/about/Aboutpage'
 
@@ -27,10 +27,10 @@ function App() {
         <Navbar isAuthopen={IsAuthOpen} setIsAuthOpen={setIsAuthOpen} />
         <Routes>
           <Route path='/' element={<Home />} />
-          <Route path='/shop' element={<ShopPage />} />
+          <Route path='/shop' element={<Shoppage />} />
           <Route path='/cart' element={<Cartpage />} />
           <Route path='/contact' element={<ContactPage />} />
-          <Route path='/gift' element={<GiftPage />} />
+          <Route path='/gift' element={<Giftpage />} />
           <Route path='/collections' element={<CollectionPage />} />
           <Route path='/about' element={<Aboutpage />} />
         </Routes>

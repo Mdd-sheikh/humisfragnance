@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import "./GiftPage.css";
+import "./Giftpage.css";
 import { Assets, GIFT_SETS } from "../../assets/Assests";
 import { Context } from "../../context/Context";
 import { Link, Links } from "react-router-dom";
@@ -23,7 +23,7 @@ import { Link, Links } from "react-router-dom";
  * }
  */
 
-export default function GiftPage() {
+export default function Giftpage() {
   return (
     <div className="gift-page">
       <GiftHero />

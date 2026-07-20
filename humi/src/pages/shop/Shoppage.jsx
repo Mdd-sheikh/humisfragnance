@@ -40,7 +40,7 @@ const SORT_OPTIONS = [
 const PRICE_MIN = 50;
 const PRICE_MAX = 500;
 
-export default function ShopPage() {
+export default function Shoppage() {
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [selectedGenders, setSelectedGenders] = useState([]);
     const [selectedNotes, setSelectedNotes] = useState([]);
