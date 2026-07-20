@@ -10,7 +10,7 @@ import ShopPage from './pages/shop/Shoppage'
 import { Context } from './context/Context'
 import CartPage from './pages/cart/Cartpage'
 import ContactPage from './pages/contact/ContactPage'
-import GiftPage from './pages/gift/GiftPage'
+import GiftPage from './pages/gift/Giftpage'
 import CollectionPage from './pages/collection/Collectionpage'
 import AboutPage from './pages/about/Aboutpage'
 
