@@ -12,7 +12,7 @@ import CartPage from './pages/cart/Cartpage'
 import ContactPage from './pages/contact/ContactPage'
 import GiftPage from './pages/gift/Giftpage'
 import CollectionPage from './pages/collection/Collectionpage'
-import AboutPage from './pages/about/Aboutpage'
+import Aboutpage from './pages/about/Aboutpage'
 
 
 function App() {
@@ -28,11 +28,11 @@ function App() {
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/shop' element={<ShopPage />} />
-          <Route path='/cart' element={<CartPage/>}/>
-          <Route path='/contact' element={<ContactPage/>}/>
-          <Route path='/gift' element={<GiftPage/>}/>
-          <Route path='/collections' element={<CollectionPage/>}/>
-          <Route path='/about' element={<AboutPage/>}/>
+          <Route path='/cart' element={<CartPage />} />
+          <Route path='/contact' element={<ContactPage />} />
+          <Route path='/gift' element={<GiftPage />} />
+          <Route path='/collections' element={<CollectionPage />} />
+          <Route path='/about' element={<Aboutpage />} />
         </Routes>
         <Footer />
       </div>

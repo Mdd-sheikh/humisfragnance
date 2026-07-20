@@ -1,5 +1,5 @@
 import React from "react";
-import "./AboutPage.css";
+import "./Aboutpage.css";
 import { Assets } from "../../assets/Assests";
 
 /**
@@ -78,7 +78,7 @@ const FOUNDERS = [
     { name: "Julian Vane", role: "Creative Director" },
 ];
 
-export default function AboutPage() {
+export default function Aboutpage() {
     return (
         <div className="about-page">
             <AboutHero />
