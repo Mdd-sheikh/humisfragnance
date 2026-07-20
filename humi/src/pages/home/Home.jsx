@@ -5,7 +5,7 @@ import './Home.css'
 import Fragrancehero from '../../sections/fragance/Fragnancehero'
 import Insights from '../../sections/insights/Insights'
 import Shopbyuse from '../../sections/shopbyuse/Shopbyuse'
-import ProductGrid from '../../sections/products/Productgrid'
+import Productgrid from '../../sections/products/Productgrid'
 
 const Home = () => {
   return (
@@ -17,7 +17,7 @@ const Home = () => {
         <Shopbyuse/>
       </div>
       <div className="products-display">
-        <ProductGrid/>
+        <Productgrid/>
       </div>
       <div className="insign-section">
         <Insights/>

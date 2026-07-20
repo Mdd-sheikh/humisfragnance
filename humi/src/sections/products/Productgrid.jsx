@@ -1,5 +1,5 @@
 import { useState, useMemo, useContext } from "react";
-import "./ProductGrid.css";
+import "./Productgrid.css";
 import { PRODUCTS } from "../../assets/Assests";
 import { Context } from "../../context/Context";
 import { Link } from "react-router-dom";
@@ -208,7 +208,7 @@ function CartPanel({ open, items, onClose, onUpdateQty, onRemove, total }) {
 
 /* ---------------- Main export ---------------- */
 
-export default function ProductGrid() {
+export default function Productgrid() {
   const { cart, setCart, updateQty, addToCart, removeFromCart, cartItems, cartCount, cartTotal } = useContext(Context) // { [id]: qty }
   const [isCartOpen, setIsCartOpen] = useState(false);
 
