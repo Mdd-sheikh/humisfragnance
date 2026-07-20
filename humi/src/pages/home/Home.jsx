@@ -2,7 +2,7 @@ import React from 'react'
 import Hero from '../../sections/herosection/Hero'
 import FAQAccordion from '../../sections/faqsection/Faqaccordion'
 import './Home.css'
-import FragranceHero from '../../sections/fragance/FragnanceHero'
+import Fragrancehero from '../../sections/fragance/FragnanceHero'
 import Insights from '../../sections/insights/Insights'
 import ShopByUse from '../../sections/shopbyuse/Shopbyuse'
 import ProductGrid from '../../sections/products/Productgrid'
@@ -23,7 +23,7 @@ const Home = () => {
         <Insights/>
       </div>
       <div className="fragnace-section">
-        <FragranceHero/>
+        <Fragrancehero/>
       </div>
       <div className="faq-section">
 
