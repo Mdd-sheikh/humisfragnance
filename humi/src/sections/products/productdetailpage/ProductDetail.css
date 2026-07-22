@@ -1,0 +1,471 @@
+.pd-page {
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Manrope", -apple-system, sans-serif;
+
+    --color-primary: #755b00;
+    --color-primary-light: #c9a227;
+    --color-primary-dark: #4b3a00;
+
+    --bg-primary: #fbf9f9;
+    --bg-card: #ffffff;
+    --bg-muted: #dbdad9;
+    --bg-panel: #f2f0ee;
+
+    --text-primary: #1b1c1c;
+    --text-secondary: #4d4635;
+
+    --border-color: #d1c5af;
+    --success: #2e7d32;
+    --error: #a13a3a;
+
+    font-family: var(--font-body);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 20px 110px;
+    /* bottom padding leaves room for sticky bar */
+    box-sizing: border-box;
+}
+
+.pd-page * {
+    box-sizing: border-box;
+}
+
+/* ---------- Layout ---------- */
+.pd-top {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+@media (min-width: 960px) {
+    .pd-top {
+        flex-direction: row;
+        gap: 48px;
+        align-items: flex-start;
+    }
+}
+
+/* ---------- Gallery ---------- */
+.pd-gallery {
+    display: flex;
+    gap: 14px;
+    flex: 1.1;
+}
+
+.pd-thumbs {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    order: 2;
+}
+
+@media (min-width: 960px) {
+    .pd-thumbs {
+        flex-direction: column;
+        order: -1;
+    }
+}
+
+.pd-thumb {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg-card);
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.pd-thumb.active,
+.pd-thumb:hover {
+    opacity: 1;
+    border-color: var(--color-primary-light);
+}
+
+.pd-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pd-main-image {
+    position: relative;
+    flex: 1;
+    background: var(--bg-panel);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+}
+
+.pd-main-image img {
+    width: 100%;
+    max-height: 460px;
+    object-fit: contain;
+    padding: 20px;
+}
+
+.pd-badge {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: var(--color-primary-light);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 4px;
+    z-index: 2;
+}
+
+/* ---------- Details ---------- */
+.pd-details {
+    flex: 1;
+}
+
+.pd-breadcrumb {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin: 0 0 10px;
+}
+
+.pd-name {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: var(--text-primary);
+}
+
+.pd-price {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--color-primary-light);
+    margin: 0 0 20px;
+}
+
+.pd-label {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.pd-size-block {
+    margin-bottom: 20px;
+}
+
+.pd-size-row {
+    display: flex;
+    gap: 10px;
+}
+
+.pd-size-btn {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.pd-size-btn.active {
+    background: #f6ecc9;
+    border-color: var(--color-primary-light);
+    color: var(--color-primary-dark);
+}
+
+.pd-description {
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    margin: 0 0 18px;
+}
+
+.pd-features {
+    list-style: none;
+    margin: 0 0 24px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pd-features li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.pd-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-primary-light);
+    flex-shrink: 0;
+}
+
+/* ---------- Olfactory pyramid ---------- */
+.pd-notes-card {
+    background: var(--bg-panel);
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.pd-notes-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-primary-light);
+}
+
+.pd-note-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid var(--bg-muted);
+}
+
+.pd-note-row:first-of-type {
+    border-top: none;
+    padding-top: 0;
+}
+
+.pd-note-label {
+    display: block;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.pd-note-value {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.pd-note-icon {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    opacity: 0.6;
+}
+
+/* ---------- Related products ---------- */
+.pd-related {
+    margin-top: 56px;
+}
+
+.pd-related-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.pd-related-header h2 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+.pd-view-all {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.pd-view-all:hover {
+    text-decoration: underline;
+}
+
+.pd-related-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+@media (min-width: 700px) {
+    .pd-related-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.pd-related-card {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+}
+
+.pd-related-img-wrap {
+    background: var(--bg-panel);
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 1;
+    margin-bottom: 10px;
+}
+
+.pd-related-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
+
+.pd-related-card:hover .pd-related-img-wrap img {
+    transform: scale(1.04);
+}
+
+.pd-related-series {
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    color: var(--color-primary-light);
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.pd-related-card h3 {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: var(--text-primary);
+}
+
+.pd-related-card p {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* ---------- Sticky bottom bar ---------- */
+.pd-sticky-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    z-index: 40;
+    flex-wrap: wrap;
+}
+
+.pd-sticky-info {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+    min-width: 0;
+}
+
+.pd-sticky-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.pd-sticky-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.pd-btn {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 12px 22px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.pd-btn-outline {
+    background: var(--bg-card);
+    border-color: var(--color-primary-light);
+    color: var(--color-primary-dark);
+}
+
+.pd-btn-outline:hover {
+    background: var(--bg-panel);
+}
+
+.pd-btn-primary {
+    background: var(--color-primary-light);
+    color: #fff;
+}
+
+.pd-btn-primary:hover {
+    background: var(--color-primary);
+}
+
+/* ---------- Not found ---------- */
+.pd-not-found {
+    text-align: center;
+    padding: 100px 20px;
+    font-family: var(--font-body);
+}
+
+.pd-not-found a {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+/* ---------- Accessibility ---------- */
+.pd-thumb:focus-visible,
+.pd-size-btn:focus-visible,
+.pd-btn:focus-visible,
+.pd-related-card:focus-visible {
+    outline: 2px solid var(--color-primary-light);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .pd-thumb,
+    .pd-size-btn,
+    .pd-related-img-wrap img {
+        transition: none;
+    }
+}

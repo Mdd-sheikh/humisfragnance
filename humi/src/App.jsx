@@ -12,8 +12,11 @@ import Cartpage from './pages/cart/Cartpage'
 import ContactPage from './pages/contact/ContactPage'
 import Giftpage from './pages/gift/Giftpage'
 import CollectionPage from './pages/collection/Collectionpage'
+import ProductDetail from './sections/products/productdetailpage/ProductDetail'
 import Aboutpage from './pages/about/Aboutpage'
+import Settingspage from './pages/settings/Settingspage'
 import PrivateRoute from './routes/PrivateRoute'
+import PublicRoute from './routes/PublicRoute'
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import './styles/toast.css'
@@ -34,14 +37,16 @@ function App() {
           <Route path='/' element={<Home />} />
           <Route element={<PrivateRoute isAuthopen={IsAuthOpen} setIsAuthOpen={setIsAuthOpen} />}>
             <Route path='/cart' element={<Cartpage />} />
+            <Route path='/settings' element={<Settingspage />} />
           </Route>
-          <Route element={<PrivateRoute isAuthopen={IsAuthOpen} setIsAuthOpen={setIsAuthOpen} />}>
+
           <Route path='/shop' element={<Shoppage />} />
-            <Route path='/contact' element={<ContactPage />} />
-            <Route path='/gift' element={<Giftpage />} />
-            <Route path='/collections' element={<CollectionPage />} />
-            <Route path='/about' element={<Aboutpage />} />
-          </Route>
+          <Route path='/contact' element={<ContactPage />} />
+          <Route path='/gift' element={<Giftpage />} />
+          <Route path='/collections' element={<CollectionPage />} />
+          <Route path='/about' element={<Aboutpage />} />
+          <Route path='/product/:id' element={<ProductDetail />} />
+
         </Routes>
         <Footer />
       </div>

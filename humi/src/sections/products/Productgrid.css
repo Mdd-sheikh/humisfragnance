@@ -333,7 +333,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 5px;
-  
+
 }
 
 /* ---------- Cart panel ---------- */
@@ -352,7 +352,7 @@
 .pg-cart-backdrop.is-open {
   opacity: 1;
   pointer-events: auto;
- 
+
 }
 
 .pg-cart {
@@ -527,10 +527,23 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .pg-card,
   .pg-add-btn,
   .pg-cart,
   .pg-cart-backdrop {
     transition: none;
   }
+}
+
+.pg-card__link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.pg-card__body-top {
+  padding: 0 12px;
+  /* match whatever padding pg-card__body already uses */
 }

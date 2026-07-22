@@ -54,7 +54,6 @@ function formatINR(n) {
 
 function ProductCard({ product, onAdd }) {
 
-
   const [qty, setQty] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
 
@@ -71,33 +70,39 @@ function ProductCard({ product, onAdd }) {
 
   return (
     <article className="pg-card">
-      <div className="pg-card__media">
-        {product.compareAt && <span className="pg-card__badge">Sale</span>}
-        {product.image ? (
-          <img className="pg-card__img" src={product.image} alt={product.alt || product.name} loading="lazy" />
-        ) : (
-          <div className="pg-card__img pg-card__img--placeholder" role="img" aria-label={product.name}>
-            <span>Image</span>
-          </div>
-        )}
-      </div>
-
-      <div className="pg-card__body">
-        <h3 className="pg-card__title">{product.name}</h3>
-
-        <div className="pg-card__rating">
-          <Stars rating={product.rating} />
-          <span className="pg-card__reviews">({product.reviews})</span>
-        </div>
-
-        <div className="pg-card__price">
-          <span className="pg-card__price-label">From</span>
-          <span className="pg-card__price-now">{formatINR(product.price)}</span>
-          {product.compareAt && (
-            <span className="pg-card__price-was">{formatINR(product.compareAt)}</span>
+      {/* NEW: clickable area -> product detail page. Only wraps media + title + rating + price,
+          so the stepper/add-to-cart controls below stay untouched and don't trigger navigation. */}
+      <Link to={`/product/${product.id}`} className="pg-card__link">
+        <div className="pg-card__media">
+          {product.compareAt && <span className="pg-card__badge">Sale</span>}
+          {product.image ? (
+            <img className="pg-card__img" src={product.image} alt={product.alt || product.name} loading="lazy" />
+          ) : (
+            <div className="pg-card__img pg-card__img--placeholder" role="img" aria-label={product.name}>
+              <span>Image</span>
+            </div>
           )}
         </div>
 
+        <div className="pg-card__body-top">
+          <h3 className="pg-card__title">{product.name}</h3>
+
+          <div className="pg-card__rating">
+            <Stars rating={product.rating} />
+            <span className="pg-card__reviews">({product.reviews})</span>
+          </div>
+
+          <div className="pg-card__price">
+            <span className="pg-card__price-label">From</span>
+            <span className="pg-card__price-now">{formatINR(product.price)}</span>
+            {product.compareAt && (
+              <span className="pg-card__price-was">{formatINR(product.compareAt)}</span>
+            )}
+          </div>
+        </div>
+      </Link>
+
+      <div className="pg-card__body">
         <div className="pg-card__controls">
           <div className="pg-stepper">
             <button type="button" className="pg-stepper__btn" onClick={dec} aria-label="Decrease quantity">
@@ -223,7 +228,7 @@ export default function Productgrid() {
         </div>
 
         <div className="pg__view-all-wrap">
-        <Link to="/shop"> <button type="button" className="pg__view-all">View all</button></Link> 
+          <Link to="/shop"> <button type="button" className="pg__view-all">View all</button></Link>
         </div>
       </section>
 

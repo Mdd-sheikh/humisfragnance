@@ -12,6 +12,7 @@ import {
     FiPackage,
     FiCreditCard,
     FiChevronDown,
+    FiSettings
 } from "react-icons/fi";
 
 import "./Navbar.css";
@@ -202,15 +203,19 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
                                             Payments
                                         </Link>
 
+
                                         <button
                                             onClick={handleLogoutClick}
-
-
-
                                         >
                                             <FiLogOut />
                                             Logout
                                         </button>
+                                        <Link to="/settings">
+                                            <FiSettings />
+                                            Settings
+                                        </Link>
+                                        
+                                        
 
                                     </div>
 
@@ -368,6 +373,13 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
                             <FiCreditCard />
                             Payments
                         </NavLink>
+                        <button onClick={() => {
+                            setIsLoggedIn(false);
+                            closeMenu();
+                        }}>
+                            <FiSettings />
+                            Settings
+                        </button>
 
                         <button
                             onClick={() => {
@@ -378,6 +390,7 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
                             <FiLogOut />
                             Logout
                         </button>
+
 
                     </div>
 
