@@ -6,10 +6,10 @@ import { Context } from "../../context/Context";
 const TAX_RATE = 0.08; // 8% — adjust to your actual tax rule
 
 function formatUSD(amount) {
-  return `$${amount.toFixed(2)}`;
+  return `₹${amount.toFixed(2)}`;
 }
 
-/**
+  /**
  * Full checkout flow: Shopping Bag -> Shipping Address.
  * Cart data comes entirely from Context (cartItems/cartCount/cartTotal) —
  * nothing here is hardcoded.

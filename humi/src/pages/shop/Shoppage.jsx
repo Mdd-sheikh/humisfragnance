@@ -225,8 +225,8 @@ export default function Shoppage() {
                                     aria-label="Maximum price"
                                 />
                                 <div className="price-range__labels">
-                                    <span>${PRICE_MIN}</span>
-                                    <span className="price-range__current">${maxPrice}</span>
+                                    <span>₹{PRICE_MIN}</span>
+                                    <span className="price-range__current">₹{maxPrice}</span>
                                 </div>
                             </div>
                         </FilterGroup>
@@ -299,7 +299,7 @@ function ProductCard({ product }) {
                 <p className="product-card__notes">{product.notes}</p>
 
                 <div className="product-card__footer">
-                    <span className="product-card__price">${product.price.toFixed(2)}</span>
+                    <span className="product-card__price">₹{product.price.toFixed(2)}</span>
                     <button
                         type="button"
                         className={`product-card__buy ${justAdded ? "is-added" : ""}`}

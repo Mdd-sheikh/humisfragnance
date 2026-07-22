@@ -140,7 +140,7 @@ function MostLoved() {
                         </div>
                         <h3 className="loved-card__name">{item.name}</h3>
                         <p className="loved-card__desc">{item.description}</p>
-                        <span className="loved-card__price">${item.price.toFixed(2)}</span>
+                        <span className="loved-card__price">₹{item.price.toFixed(2)}</span>
                     </a>
                 ))}
             </div>

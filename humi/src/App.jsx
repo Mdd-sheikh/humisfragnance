@@ -20,6 +20,7 @@ import PublicRoute from './routes/PublicRoute'
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import './styles/toast.css'
+import OrderPage from './pages/settings/orders/OrderPage'
 
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
           <Route element={<PrivateRoute isAuthopen={IsAuthOpen} setIsAuthOpen={setIsAuthOpen} />}>
             <Route path='/cart' element={<Cartpage />} />
             <Route path='/settings' element={<Settingspage />} />
+            <Route path='/orders' element={<OrderPage/>}/>
           </Route>
 
           <Route path='/shop' element={<Shoppage />} />
