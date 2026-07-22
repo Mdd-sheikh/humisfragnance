@@ -1,18 +1,35 @@
 import React, { useState } from "react";
 import "./Auth.css";
+import { useNavigate } from "react-router-dom";
 
 export default function Auth({ onClose, setIsAuthOpen }) {
     const [mode, setMode] = useState("login"); // "login" | "signup"
     const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate();
+
+    // ...rest of your state stays the same
+
+    const handleClose = () => {
+        setIsAuthOpen(false);
+        navigate("/"); // go home
+    };
 
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
+
+
     const [errors, setErrors] = useState({});
     const [shake, setShake] = useState(false);
 
     const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+    const [userData, setuserData] = useState({
+        fullName: "",
+        email: "",
+        password: ""
+    })
 
     const validate = () => {
         const nextErrors = {};
@@ -85,7 +102,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                 <button
                     type="button"
                     className="elixir-close"
-                    onClick={() => setIsAuthOpen(false)}
+                    onClick={handleClose}
                     aria-label="Close login dialog"
                 >
                     &times;
