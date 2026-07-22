@@ -1,35 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import "./Auth.css";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { Context } from "../../context/Context";
 
 export default function Auth({ onClose, setIsAuthOpen }) {
     const [mode, setMode] = useState("login"); // "login" | "signup"
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false); // NEW: tracks submit state
     const navigate = useNavigate();
 
-    // ...rest of your state stays the same
+    const { URL, setToken } = useContext(Context);
 
     const handleClose = () => {
+        if (loading) return; // prevent closing mid-submit
         setIsAuthOpen(false);
-        navigate("/"); // go home
+        navigate("/");
     };
 
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-
-
     const [errors, setErrors] = useState({});
     const [shake, setShake] = useState(false);
 
     const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-
-    const [userData, setuserData] = useState({
-        fullName: "",
-        email: "",
-        password: ""
-    })
 
     const validate = () => {
         const nextErrors = {};
@@ -58,8 +55,9 @@ export default function Auth({ onClose, setIsAuthOpen }) {
         setTimeout(() => setShake(false), 400);
     };
 
-    const handleSubmit = (e) => {
+    const submitHandler = async (e) => {
         e.preventDefault();
+
         const nextErrors = validate();
         setErrors(nextErrors);
 
@@ -68,15 +66,39 @@ export default function Auth({ onClose, setIsAuthOpen }) {
             return;
         }
 
-        // TODO: hook up real auth logic here
-        if (mode === "login") {
-            console.log("Login attempt", { email, password });
-        } else {
-            console.log("Sign up attempt", { fullName, email, password });
+        setLoading(true); // disable inputs + start button animation
+
+        try {
+            if (mode === "signup") {
+                const signupData = { username: fullName, email, password };
+                const response = await axios.post(`${URL}/auth/register`, signupData);
+
+                setToken(response.data.token);
+                localStorage.setItem("token", response.data.token);
+                toast.success("Account created successfully!");
+                setIsAuthOpen(false);
+                navigate("/");
+
+            } else {
+                const loginData = { email, password };
+                const response = await axios.post(`${URL}/auth/login`, loginData);
+
+                setToken(response.data.token);
+                localStorage.setItem("token", response.data.token);
+                toast.success("Logged in successfully!");
+                setIsAuthOpen(false);
+                navigate("/");
+            }
+        } catch (error) {
+            console.error("Error submitting form:", error);
+            toast.error(error.response?.data?.message || "Something went wrong");
+        } finally {
+            setLoading(false); // re-enable inputs, whether success or failure
         }
     };
 
     const switchMode = (nextMode) => {
+        if (loading) return;
         setMode(nextMode);
         setErrors({});
     };
@@ -103,6 +125,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                     type="button"
                     className="elixir-close"
                     onClick={handleClose}
+                    disabled={loading}
                     aria-label="Close login dialog"
                 >
                     &times;
@@ -113,7 +136,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                     {mode === "login" ? "Welcome Back" : "Create Account"}
                 </h1>
 
-                <form className="elixir-form" onSubmit={handleSubmit} noValidate>
+                <form className="elixir-form" onSubmit={submitHandler} noValidate>
                     {mode === "signup" && (
                         <div className="elixir-field">
                             <label htmlFor="elixir-fullname" className="elixir-label">
@@ -125,6 +148,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                                 className={`elixir-input${errors.fullName ? " elixir-input-error" : ""}`}
                                 placeholder="Enter your full name"
                                 value={fullName}
+                                disabled={loading}
                                 onChange={(e) => {
                                     setFullName(e.target.value);
                                     clearFieldError("fullName");
@@ -146,6 +170,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                             className={`elixir-input${errors.email ? " elixir-input-error" : ""}`}
                             placeholder="Enter your email address"
                             value={email}
+                            disabled={loading}
                             onChange={(e) => {
                                 setEmail(e.target.value);
                                 clearFieldError("email");
@@ -172,6 +197,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                                 className={`elixir-input${errors.password ? " elixir-input-error" : ""}`}
                                 placeholder="Enter your password"
                                 value={password}
+                                disabled={loading}
                                 onChange={(e) => {
                                     setPassword(e.target.value);
                                     clearFieldError("password");
@@ -181,6 +207,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                                 type="button"
                                 className="elixir-eye"
                                 onClick={() => setShowPassword((s) => !s)}
+                                disabled={loading}
                                 aria-label={showPassword ? "Hide password" : "Show password"}
                             >
                                 {showPassword ? (
@@ -211,8 +238,18 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                         )}
                     </div>
 
-                    <button type="submit" className="elixir-submit">
-                        {mode === "login" ? "LOGIN" : "SIGN UP"}
+                    <button
+                        type="submit"
+                        className={`elixir-submit${loading ? " elixir-submit-loading" : ""}`}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <span className="elixir-spinner" aria-label="Loading"></span>
+                        ) : mode === "login" ? (
+                            "LOGIN"
+                        ) : (
+                            "SIGN UP"
+                        )}
                     </button>
                 </form>
 
@@ -221,7 +258,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                 </div>
 
                 <div className="elixir-social-row">
-                    <button type="button" className="elixir-social-btn">
+                    <button type="button" className="elixir-social-btn" disabled={loading}>
                         <svg width="18" height="18" viewBox="0 0 48 48">
                             <path
                                 fill="#FFC107"
@@ -242,7 +279,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                         </svg>
                         GOOGLE
                     </button>
-                    <button type="button" className="elixir-social-btn">
+                    <button type="button" className="elixir-social-btn" disabled={loading}>
                         <svg width="16" height="18" viewBox="0 0 384 512" fill="currentColor">
                             <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141 4 184.8 4 273.5c0 25.7 4.7 52.3 14.1 79.7 12.4 36.6 57.2 126.4 103.9 124.9 24.5-.6 41.8-17.4 73.7-17.4 30.9 0 46.9 17.4 74.1 17.4 47.1-.7 87.6-82.6 99.4-119.3-63.2-29.8-51-87.4-51.5-90.1zM256.5 84.9c26.6-31.6 24.2-60.4 23.4-70.9-23.5 1.4-50.7 16.2-66.3 34.4-17.2 19.4-27.4 43.4-25.2 70.3 25.6 2 48.9-11.1 68.1-33.8z" />
                         </svg>
@@ -254,16 +291,24 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                     {mode === "login" ? (
                         <>
                             Don&apos;t have an account?{" "}
-                            <a href="#signup" onClick={(e) => { e.preventDefault(); switchMode("signup"); }}>
+                            <button
+                                type="button"
+                                className="elixir-link-btn"
+                                onClick={() => switchMode("signup")}
+                            >
                                 Sign Up
-                            </a>
+                            </button>
                         </>
                     ) : (
                         <>
                             Already have an account?{" "}
-                            <a href="#login" onClick={(e) => { e.preventDefault(); switchMode("login"); }}>
+                            <button
+                                type="button"
+                                className="elixir-link-btn"
+                                onClick={() => switchMode("login")}
+                            >
                                 Login
-                            </a>
+                            </button>
                         </>
                     )}
                 </p>

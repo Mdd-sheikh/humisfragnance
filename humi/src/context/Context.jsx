@@ -9,6 +9,17 @@ export const Context = createContext(null)
 
 const ContextProvider = ({ children }) => {
 
+    const URL = "http://localhost:5000/api";
+
+    const [token, setToken] = useState(localStorage.getItem("token") || null);
+
+
+    // handle logout function
+    const handleLogout = () => {
+        setToken(null);
+        localStorage.removeItem("token");
+    };
+
     const [cart, setCart] = useState({})
 
     // add to cart function
@@ -68,6 +79,10 @@ const ContextProvider = ({ children }) => {
         cartItems,
         cartCount,
         cartTotal,
+        URL,
+        token, 
+        setToken,
+        handleLogout
     }
 
 

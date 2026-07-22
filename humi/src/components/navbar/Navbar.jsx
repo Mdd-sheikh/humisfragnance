@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Link, Links, NavLink } from "react-router-dom";
+import { Link, Links, NavLink, useNavigate } from "react-router-dom";
 
 import {
     FiMenu,
@@ -23,7 +23,9 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
-    const { cartCount } = useContext(Context)
+    const { cartCount, token, handleLogout } = useContext(Context)
+    const navigate = useNavigate();
+
 
 
     // for search item
@@ -33,6 +35,15 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
     const toggleSearch = () => {
         setSearchOpen((prev) => !prev);
     };
+
+    // handle logout button click
+    const handleLogoutClick = () => {
+        handleLogout();
+        setProfileOpen(false);
+        navigate("/");
+    };
+
+
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
@@ -58,6 +69,9 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
 
     const closeMenu = () => {
         setMenuOpen(false);
+        handleLogout();
+        setProfileOpen(false);
+        navigate("/");
     };
 
     return (
@@ -147,7 +161,7 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
 
                         </button> </Link>
 
-                        {!isLoggedIn ? (
+                        {!token ? (
 
                             <button
                                 className="login-btn"
@@ -189,9 +203,10 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
                                         </Link>
 
                                         <button
-                                            onClick={() =>
-                                                setIsLoggedIn(false)
-                                            }
+                                            onClick={handleLogoutClick}
+
+
+
                                         >
                                             <FiLogOut />
                                             Logout
@@ -314,7 +329,7 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
 
                 <hr />
 
-                {!isLoggedIn ? (
+                {!token ? (
 
                     <button
                         className="mobile-login"
