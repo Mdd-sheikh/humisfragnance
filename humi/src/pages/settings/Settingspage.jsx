@@ -21,7 +21,7 @@ import {
     FiTrash2,
     FiHeadphones,
 } from "react-icons/fi";
-import "./SettingsPage.css";
+import "./Settingspage.css";
 
 // ---------- Mock data (swap with real API calls) ----------
 const initialOrders = [
