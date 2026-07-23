@@ -70,18 +70,16 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
 
     const closeMenu = () => {
         setMenuOpen(false);
-        handleLogout();
         setProfileOpen(false);
-        navigate("/");
     };
 
     return (
         <>
             {/* Announcement */}
 
-            <div className="top-strip">
+            {/*<div className="top-strip">
                 🚚 Free Delivery Above ₹999
-            </div>
+            </div>}
 
             {/* Navbar */}
 
@@ -189,7 +187,7 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
 
                                     <div className="profile-dropdown">
 
-                                        <Link to="/account">
+                                        <Link to="/settings">
                                             Account
                                         </Link>
 
@@ -351,7 +349,7 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
                     <div className="mobile-account">
 
                         <NavLink
-                            to="/account"
+                            to="/settings"
                             onClick={closeMenu}
                         >
                             <FiUser />
@@ -373,18 +371,20 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
                             <FiCreditCard />
                             Payments
                         </NavLink>
-                        <button onClick={() => {
-                            setIsLoggedIn(false);
+
+                       <Link to="/settings"> <button onClick={() => {
                             closeMenu();
                         }}>
                             <FiSettings />
                             Settings
-                        </button>
+                        </button></Link>
 
                         <button
                             onClick={() => {
                                 setIsLoggedIn(false);
                                 closeMenu();
+                                handleLogout();
+
                             }}
                         >
                             <FiLogOut />

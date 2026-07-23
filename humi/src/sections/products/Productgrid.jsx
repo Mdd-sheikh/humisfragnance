@@ -201,9 +201,9 @@ function CartPanel({ open, items, onClose, onUpdateQty, onRemove, total }) {
               <span>Subtotal</span>
               <strong>{formatINR(total)}</strong>
             </div>
-            <button type="button" className="pg-add-btn pg-add-btn--full">
+           <Link to="/cart"> <button type="button" className="pg-add-btn pg-add-btn--full">
               Go to Cart Page
-            </button>
+            </button></Link>
           </div>
         )}
       </aside>
@@ -216,6 +216,7 @@ function CartPanel({ open, items, onClose, onUpdateQty, onRemove, total }) {
 export default function Productgrid() {
   const { cart, setCart, updateQty, addToCart, removeFromCart, cartItems, cartCount, cartTotal } = useContext(Context) // { [id]: qty }
   const [isCartOpen, setIsCartOpen] = useState(false);
+  
 
 
   return (

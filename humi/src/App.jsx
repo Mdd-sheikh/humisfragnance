@@ -39,15 +39,15 @@ function App() {
           <Route element={<PrivateRoute isAuthopen={IsAuthOpen} setIsAuthOpen={setIsAuthOpen} />}>
             <Route path='/cart' element={<Cartpage />} />
             <Route path='/settings' element={<Settingspage />} />
-            <Route path='/orders' element={<OrderPage/>}/>
+            <Route path='/orders' element={<OrderPage />} />
+            <Route path='/shop' element={<Shoppage />} />
+            <Route path='/product/:id' element={<ProductDetail />} />
           </Route>
 
-          <Route path='/shop' element={<Shoppage />} />
           <Route path='/contact' element={<ContactPage />} />
           <Route path='/gift' element={<Giftpage />} />
           <Route path='/collections' element={<CollectionPage />} />
           <Route path='/about' element={<Aboutpage />} />
-          <Route path='/product/:id' element={<ProductDetail />} />
 
         </Routes>
         <Footer />
