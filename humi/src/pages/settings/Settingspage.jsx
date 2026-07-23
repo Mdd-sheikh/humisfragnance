@@ -58,7 +58,7 @@ function SettingRow({ icon, label, isOpen, onToggle, children }) {
     );
 }
 
-export default function SettingsPage() {
+export default function Settingspage() {
     // ----- profile -----
     const [avatar, setAvatar] = useState(
         "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=300&h=300&fit=crop&crop=faces"
