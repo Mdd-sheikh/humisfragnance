@@ -1,7 +1,10 @@
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+import axios from "axios";
+// adjust if you use a different toast lib
 import "./ShopPage.css";
-import { PRODUCTS } from "../../assets/Assests";
 import { Context } from "../../context/Context";
+
+// adjust to match your existing config
 
 /**
  * All Fragrances — shop page
@@ -40,7 +43,13 @@ const SORT_OPTIONS = [
 const PRICE_MIN = 50;
 const PRICE_MAX = 500;
 
-export default function ShopPage() {
+export default function Shoppage() {
+    const { API_URL } = useContext(Context)
+    const [products, setProducts] = useState([]);
+    console.log(products);
+
+    const [loading, setLoading] = useState(true);
+
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [selectedGenders, setSelectedGenders] = useState([]);
     const [selectedNotes, setSelectedNotes] = useState([]);
@@ -49,6 +58,47 @@ export default function ShopPage() {
     const [sortOpen, setSortOpen] = useState(false);
     const [addedId, setAddedId] = useState(null);
 
+    // ---------------- Fetch products from backend ----------------
+    const fetchProducts = async () => {
+        setLoading(true);
+        try {
+            const res = await axios.get(`${API_URL}/product/get`);
+
+            // no success field from backend — check products array instead
+            const mapped = (res.data.products || []).map((p) => ({
+                id: p._id,
+                name: p.name,
+                slug: p.slug,
+                image: p.images?.[0]?.url || "",
+                alt: p.name,
+                price: p.discountPrice || p.price,
+                compareAt: p.discountPrice ? p.price : null,
+                notes: p.shortDescription || p.description || "",
+                category: p.category, // powers the "Olfactory Notes" filter below
+                badge: p.tags?.includes("best seller")
+                    ? "Best Seller"
+                    : p.isFeatured
+                        ? "Featured"
+                        : null,
+                rating: p.ratings?.average || 0,
+                reviews: p.ratings?.count || 0,
+                stock: p.stock,
+                variants: p.variants,
+            }));
+
+            setProducts(mapped);
+        } catch (err) {
+            const msg = err.response?.data?.message || err.message || "Something went wrong";
+            toast.error(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
     const toggleValue = (list, setList, value) => {
         setList(
             list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
@@ -56,12 +106,12 @@ export default function ShopPage() {
     };
 
     const filteredProducts = useMemo(() => {
-        let result = PRODUCTS.filter((product) => {
-            const matchesGender =
-                selectedGenders.length === 0 || selectedGenders.includes(product.gender);
+        let result = products.filter((product) => {
+            // NOTE: no "gender" field exists on the backend product schema yet,
+            // so this filter is inert (always true) until that's added.
+            const matchesGender = selectedGenders.length === 0;
             const matchesNotes =
-                selectedNotes.length === 0 ||
-                selectedNotes.some((note) => product.olfactory.includes(note));
+                selectedNotes.length === 0 || selectedNotes.includes(product.category);
             const matchesPrice = product.price <= maxPrice;
             return matchesGender && matchesNotes && matchesPrice;
         });
@@ -81,7 +131,7 @@ export default function ShopPage() {
                 break;
         }
         return result;
-    }, [selectedGenders, selectedNotes, maxPrice, sortBy]);
+    }, [products, selectedGenders, selectedNotes, maxPrice, sortBy]);
 
     const handleBuyNow = (product) => {
         setAddedId(product.id);
@@ -225,8 +275,8 @@ export default function ShopPage() {
                                     aria-label="Maximum price"
                                 />
                                 <div className="price-range__labels">
-                                    <span>${PRICE_MIN}</span>
-                                    <span className="price-range__current">${maxPrice}</span>
+                                    <span>₹{PRICE_MIN}</span>
+                                    <span className="price-range__current">₹{maxPrice}</span>
                                 </div>
                             </div>
                         </FilterGroup>
@@ -247,7 +297,9 @@ export default function ShopPage() {
 
                 {/* Right column: product grid — this is the part that scrolls */}
                 <main className="shop-grid-wrap">
-                    {filteredProducts.length === 0 ? (
+                    {loading ? (
+                        <p className="shop-grid__empty">Loading fragrances…</p>
+                    ) : filteredProducts.length === 0 ? (
                         <p className="shop-grid__empty">
                             No fragrances match your filters. Try clearing a few.
                         </p>
@@ -299,7 +351,7 @@ function ProductCard({ product }) {
                 <p className="product-card__notes">{product.notes}</p>
 
                 <div className="product-card__footer">
-                    <span className="product-card__price">${product.price.toFixed(2)}</span>
+                    <span className="product-card__price">₹{product.price.toFixed(2)}</span>
                     <button
                         type="button"
                         className={`product-card__buy ${justAdded ? "is-added" : ""}`}

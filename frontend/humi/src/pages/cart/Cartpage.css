@@ -696,3 +696,50 @@
     flex-basis: 340px;
   }
 }
+
+
+/*=========================payment=========================*/
+.pm-block {
+  margin: 20px 0;
+}
+
+.pm-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pm-option {
+  flex: 1;
+  min-width: 140px;
+  border: 1px solid #ddd8ca;
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.pm-option:hover {
+  border-color: #c9a227;
+}
+
+.pm-option.active {
+  border-color: #c9a227;
+  background: #f7ecc9;
+}
+
+.pm-option__title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.pm-option__sub {
+  font-size: 12px;
+  color: #888;
+}

@@ -149,7 +149,8 @@ export const PRODUCTS = [
         image: product_three
     },
     {
-        id: "mogra", name: "Mogra Attar | Authentic Indian Attar | Handcrafted Jasmine",
+        id: "mogra", 
+        name: "Mogra Attar | Authentic Indian Attar | Handcrafted Jasmine",
         rating: 4.9,
         reviews: 116,
         price: 1090,

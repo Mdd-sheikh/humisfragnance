@@ -1,13 +1,9 @@
-import { useState, useMemo, useContext } from "react";
-import "./ProductGrid.css";
-import { PRODUCTS } from "../../assets/Assests";
+import { useState, useMemo, useContext, useEffect } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import "./Productgrid.css";
 import { Context } from "../../context/Context";
 import { Link } from "react-router-dom";
-
-
-/* ---------------- Data ---------------- */
-
-
 
 /* ---------------- Small building blocks ---------------- */
 
@@ -53,8 +49,6 @@ function formatINR(n) {
 /* ---------------- Product card ---------------- */
 
 function ProductCard({ product, onAdd }) {
-
-
   const [qty, setQty] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
 
@@ -71,33 +65,37 @@ function ProductCard({ product, onAdd }) {
 
   return (
     <article className="pg-card">
-      <div className="pg-card__media">
-        {product.compareAt && <span className="pg-card__badge">Sale</span>}
-        {product.image ? (
-          <img className="pg-card__img" src={product.image} alt={product.alt || product.name} loading="lazy" />
-        ) : (
-          <div className="pg-card__img pg-card__img--placeholder" role="img" aria-label={product.name}>
-            <span>Image</span>
-          </div>
-        )}
-      </div>
-
-      <div className="pg-card__body">
-        <h3 className="pg-card__title">{product.name}</h3>
-
-        <div className="pg-card__rating">
-          <Stars rating={product.rating} />
-          <span className="pg-card__reviews">({product.reviews})</span>
-        </div>
-
-        <div className="pg-card__price">
-          <span className="pg-card__price-label">From</span>
-          <span className="pg-card__price-now">{formatINR(product.price)}</span>
-          {product.compareAt && (
-            <span className="pg-card__price-was">{formatINR(product.compareAt)}</span>
+      <Link to={`/product/${product.id}`} className="pg-card__link">
+        <div className="pg-card__media">
+          {product.compareAt && <span className="pg-card__badge">Sale</span>}
+          {product.image ? (
+            <img className="pg-card__img" src={product.image} alt={product.alt || product.name} loading="lazy" />
+          ) : (
+            <div className="pg-card__img pg-card__img--placeholder" role="img" aria-label={product.name}>
+              <span>Image</span>
+            </div>
           )}
         </div>
 
+        <div className="pg-card__body-top">
+          <h3 className="pg-card__title">{product.name}</h3>
+
+          <div className="pg-card__rating">
+            <Stars rating={product.rating} />
+            <span className="pg-card__reviews">({product.reviews})</span>
+          </div>
+
+          <div className="pg-card__price">
+            <span className="pg-card__price-label">From</span>
+            <span className="pg-card__price-now">{formatINR(product.price)}</span>
+            {product.compareAt && (
+              <span className="pg-card__price-was">{formatINR(product.compareAt)}</span>
+            )}
+          </div>
+        </div>
+      </Link>
+
+      <div className="pg-card__body">
         <div className="pg-card__controls">
           <div className="pg-stepper">
             <button type="button" className="pg-stepper__btn" onClick={dec} aria-label="Decrease quantity">
@@ -196,9 +194,9 @@ function CartPanel({ open, items, onClose, onUpdateQty, onRemove, total }) {
               <span>Subtotal</span>
               <strong>{formatINR(total)}</strong>
             </div>
-            <button type="button" className="pg-add-btn pg-add-btn--full">
+            <Link to="/cart"> <button type="button" className="pg-add-btn pg-add-btn--full">
               Go to Cart Page
-            </button>
+            </button></Link>
           </div>
         )}
       </aside>
@@ -208,22 +206,67 @@ function CartPanel({ open, items, onClose, onUpdateQty, onRemove, total }) {
 
 /* ---------------- Main export ---------------- */
 
-export default function ProductGrid() {
-  const { cart, setCart, updateQty, addToCart, removeFromCart, cartItems, cartCount, cartTotal } = useContext(Context) // { [id]: qty }
-  const [isCartOpen, setIsCartOpen] = useState(false);
+export default function Productgrid() {
+  const {
+    cart, setCart, updateQty, addToCart, removeFromCart,
+    cartItems, cartCount, cartTotal, API_URL,
+  } = useContext(Context);
 
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // ---------------- Fetch products from backend ----------------
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_URL}/product/get`);
+
+      // no success field from backend — check products array instead
+      const mapped = (res.data.products || []).map((p) => ({
+        id: p._id,
+        name: p.name,
+        slug: p.slug,
+        image: p.images?.[0]?.url || "",
+        alt: p.name,
+        price: p.discountPrice || p.price,
+        compareAt: p.discountPrice ? p.price : null,
+        rating: p.ratings?.average || 0,
+        reviews: p.ratings?.count || 0,
+        category: p.category,
+        stock: p.stock,
+        variants: p.variants,
+      }));
+
+      setProducts(mapped);
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || "Something went wrong";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   return (
     <div className="pg-page">
       <section className="pg">
-        <div className="pg__grid">
-          {PRODUCTS.map((product) => (
-            <ProductCard key={product.id} product={product} onAdd={addToCart} />
-          ))}
-        </div>
+        {loading ? (
+          <p className="pg__loading">Loading products...</p>
+        ) : products.length === 0 ? (
+          <p className="pg__empty">No products found.</p>
+        ) : (
+          <div className="pg__grid">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} onAdd={addToCart} />
+            ))}
+          </div>
+        )}
 
         <div className="pg__view-all-wrap">
-        <Link to="/shop"> <button type="button" className="pg__view-all">View all</button></Link> 
+          <Link to="/shop"> <button type="button" className="pg__view-all">View all</button></Link>
         </div>
       </section>
 
