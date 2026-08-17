@@ -15,25 +15,7 @@ const FILTERS = ["All Items", "Attar", "EDP", "Sets"];
 const ITEMS_PER_PAGE = 10;
 const LOW_STOCK_THRESHOLD = 5;
 
-/**
- * Expects a backend endpoint that returns JSON shaped like:
- * {
- *   items: [
- *     {
- *       id: "HM-092-A",
- *       name: "Oud Al-Fayed",
- *       category: "Attar",
- *       image: "https://.../oud.jpg",
- *       stock: 12,
- *       price: 240.0
- *     },
- *     ...
- *   ],
- *   total: 48
- * }
- *
- * Adjust API_URL and the field names in mapResponse() to match your API.
- */
+
 const API_URL = "/api/products";
 
 const mapResponse = (data) => ({

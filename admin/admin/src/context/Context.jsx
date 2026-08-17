@@ -16,4 +16,4 @@ const Contextprovider = ({ children }) => {
     </Context.Provider>
 }
 
-export default Contextprovider;
+export default Contextprovider; 
