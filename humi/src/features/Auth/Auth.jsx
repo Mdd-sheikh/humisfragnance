@@ -11,7 +11,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
     const [loading, setLoading] = useState(false); // NEW: tracks submit state
     const navigate = useNavigate();
 
-    const { URL, setToken } = useContext(Context);
+    const { API_URL, setToken } = useContext(Context);
 
     const handleClose = () => {
         if (loading) return; // prevent closing mid-submit
@@ -71,7 +71,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
         try {
             if (mode === "signup") {
                 const signupData = { username: fullName, email, password };
-                const response = await axios.post(`${URL}/auth/register`, signupData);
+                const response = await axios.post(`${API_URL}/auth/register`, signupData);
 
                 setToken(response.data.token);
                 localStorage.setItem("token", response.data.token);
@@ -81,7 +81,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
 
             } else {
                 const loginData = { email, password };
-                const response = await axios.post(`${URL}/auth/login`, loginData);
+                const response = await axios.post(`${API_URL}/auth/login`, loginData);
 
                 setToken(response.data.token);
                 localStorage.setItem("token", response.data.token);

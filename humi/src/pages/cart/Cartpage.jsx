@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Cartpage.css";
 import { useContext } from "react";
 import { Context } from "../../context/Context";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const TAX_RATE = 0.08; // 8% — adjust to your actual tax rule
 
@@ -9,19 +12,22 @@ function formatUSD(amount) {
   return `₹${amount.toFixed(2)}`;
 }
 
-  /**
- * Full checkout flow: Shopping Bag -> Shipping Address.
- * Cart data comes entirely from Context (cartItems/cartCount/cartTotal) —
- * nothing here is hardcoded.
- *
- * Note: this context stores cart as { [productId]: qty } and rebuilds
- * cartItems by looking each id up in PRODUCTS. That means anything
- * passed to addToCart() must already exist in PRODUCTS, or it will be
- * silently dropped from cartItems (see the .filter(Boolean) in context.jsx).
- */
+
+/**
+* Full checkout flow: Shopping Bag -> Shipping Address.
+* Cart data comes entirely from Context (cartItems/cartCount/cartTotal) —
+* nothing here is hardcoded.
+*
+* Note: this context stores cart as { [productId]: qty } and rebuilds
+* cartItems by looking each id up in PRODUCTS. That means anything
+* passed to addToCart() must already exist in PRODUCTS, or it will be
+* silently dropped from cartItems (see the .filter(Boolean) in context.jsx).
+*/
+// adjust path
+
 export default function CartPage() {
-  const [step, setStep] = useState("cart"); // "cart" | "address" | "confirmation"
-  const [shippingAddress, setShippingAddress] = useState(null);
+  const [step, setStep] = useState("cart");
+  const [checkoutData, setCheckoutData] = useState(null);
 
   return (
     <div className="cart-page">
@@ -30,20 +36,22 @@ export default function CartPage() {
       )}
       {step === "address" && (
         <AddressStep
-          initialValue={shippingAddress}
           onBack={() => setStep("cart")}
-          onContinue={(address) => {
-            setShippingAddress(address);
-            setStep("confirmation");
+          onContinue={(data) => {
+            setCheckoutData(data);
+            setStep("payment");
           }}
         />
       )}
-      {step === "confirmation" && (
-        <OrderConfirmation
-          shippingAddress={shippingAddress}
-          onBackToBag={() => setStep("cart")}
+      {step === "payment" && (
+        <PaymentPage
+          checkoutData={checkoutData}
+          onBack={() => setStep("address")}
+          onPlaced={() => setStep("cart")} // or navigate to an order confirmation page
         />
       )}
+
+
     </div>
   );
 }
@@ -242,32 +250,66 @@ function ShoppingBag({ onCheckout }) {
    Step 2 — Shipping Address
    ============================================================ */
 
-function AddressStep({ initialValue, onBack, onContinue }) {
-  const { cartCount } = useContext(Context);
+function AddressStep({ onBack, onContinue }) {
+  const { cartCount, cartItems, API_URL } = useContext(Context);
 
-  const [form, setForm] = useState(
-    initialValue || {
-      fullName: "",
-      phone: "",
-      line1: "",
-      line2: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      country: "United States",
+  // ---- saved addresses (same fetch logic as Settingspage) ----
+  const [addresses, setAddresses] = useState([]);
+  const [loadingAddresses, setLoadingAddresses] = useState(true);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+
+  const getAddress = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_URL}/personal/address/getaddress`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!response.data.success) {
+        console.error(response.data.message);
+        return [];
+      }
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching addresses:", error.response?.data || error.message);
+      return [];
     }
-  );
+  };
+
+  useEffect(() => {
+    const load = async () => {
+      setLoadingAddresses(true);
+      const data = await getAddress();
+      setAddresses(data || []);
+      // auto-select the default one, if any
+      const def = (data || []).find((a) => a.isDefault);
+      if (def) setSelectedAddressId(def._id);
+      setLoadingAddresses(false);
+    };
+    load();
+  }, []);
+
+  // ---- "add new address" form (collapsed by default) ----
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({
+    fullName: "",
+    phone: "",
+    addressLine1: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "United States",
+  });
   const [errors, setErrors] = useState({});
 
-  const update = (field) => (e) => {
+  const update = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
-  };
 
   const validate = () => {
     const next = {};
     if (!form.fullName.trim()) next.fullName = "Full name is required.";
     if (!form.phone.trim()) next.phone = "Phone number is required.";
-    if (!form.line1.trim()) next.line1 = "Address is required.";
+    if (!form.addressLine1.trim()) next.addressLine1 = "Address is required.";
     if (!form.city.trim()) next.city = "City is required.";
     if (!form.state.trim()) next.state = "State is required.";
     if (!form.postalCode.trim()) next.postalCode = "Postal code is required.";
@@ -275,10 +317,57 @@ function AddressStep({ initialValue, onBack, onContinue }) {
     return Object.keys(next).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleAddAddress = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    onContinue(form);
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${API_URL}/personal/address/addtoaddress`,
+        form,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        toast.success("Address added");
+        setForm({
+          fullName: "",
+          phone: "",
+          addressLine1: "",
+          city: "",
+          state: "",
+          postalCode: "",
+          country: "United States",
+        });
+        setShowForm(false);
+
+        // refresh list and auto-select the newly created address
+        const refreshed = await getAddress();
+        setAddresses(refreshed || []);
+        const newest = refreshed?.[refreshed.length - 1];
+        if (newest) setSelectedAddressId(newest._id);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to add address");
+    }
+  };
+
+  // ---- continue to payment ----
+  const handleContinue = () => {
+    if (!selectedAddressId) {
+      toast.error("Please select a shipping address");
+      return;
+    }
+
+    const productIds = cartItems.map((item) => item.id);
+    const selected = addresses.find((a) => a._id === selectedAddressId);
+
+    onContinue({
+      addressId: selectedAddressId,
+      address: selected,
+      productIds,
+    });
   };
 
   return (
@@ -296,78 +385,87 @@ function AddressStep({ initialValue, onBack, onContinue }) {
           </p>
         </header>
 
-        <form className="address-form" onSubmit={handleSubmit} noValidate>
-          <div className="address-form__grid">
-            <Field
-              label="Full Name"
-              value={form.fullName}
-              onChange={update("fullName")}
-              error={errors.fullName}
-              autoComplete="name"
-            />
-            <Field
-              label="Phone Number"
-              type="tel"
-              value={form.phone}
-              onChange={update("phone")}
-              error={errors.phone}
-              autoComplete="tel"
-            />
+        {/* ---- saved address list ---- */}
+        {loadingAddresses ? (
+          <p>Loading addresses...</p>
+        ) : addresses.length === 0 ? (
+          <p className="bag-empty__hint">
+            No saved addresses yet. Add one below.
+          </p>
+        ) : (
+          <ul className="address-list">
+            {addresses.map((a) => (
+              <li
+                key={a._id}
+                className={`address-item selectable-address${selectedAddressId === a._id ? " selected" : ""
+                  }`}
+                onClick={() => setSelectedAddressId(a._id)}
+                style={{ cursor: "pointer" }}
+              >
+                <div>
+                  <input
+                    type="radio"
+                    name="selectedAddress"
+                    checked={selectedAddressId === a._id}
+                    onChange={() => setSelectedAddressId(a._id)}
+                  />
+                  <span className="address-label">
+                    {a.label || a.fullName}
+                    {a.isDefault && <span className="pill">Default</span>}
+                  </span>
+                  <span className="address-line">
+                    {a.addressLine1}, {a.city}, {a.state} {a.postalCode}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
 
-            <Field
-              label="Address Line 1"
-              value={form.line1}
-              onChange={update("line1")}
-              error={errors.line1}
-              full
-              autoComplete="address-line1"
-            />
-            <Field
-              label="Address Line 2 (optional)"
-              value={form.line2}
-              onChange={update("line2")}
-              full
-              autoComplete="address-line2"
-            />
+        <button
+          type="button"
+          className="btn btn-outline btn-sm"
+          onClick={() => setShowForm((v) => !v)}
+        >
+          {showForm ? "Cancel" : "+ Add new address"}
+        </button>
 
-            <Field
-              label="City"
-              value={form.city}
-              onChange={update("city")}
-              error={errors.city}
-              autoComplete="address-level2"
-            />
-            <Field
-              label="State"
-              value={form.state}
-              onChange={update("state")}
-              error={errors.state}
-              autoComplete="address-level1"
-            />
+        {/* ---- add-new-address form ---- */}
+        {showForm && (
+          <form className="address-form" onSubmit={handleAddAddress} noValidate>
+            <div className="address-form__grid">
+              <Field label="Full Name" value={form.fullName} onChange={update("fullName")} error={errors.fullName} autoComplete="name" />
+              <Field label="Phone Number" type="tel" value={form.phone} onChange={update("phone")} error={errors.phone} autoComplete="tel" />
+              <Field label="Address Line 1" value={form.addressLine1} onChange={update("addressLine1")} error={errors.addressLine1} full autoComplete="address-line1" />
+              <Field label="City" value={form.city} onChange={update("city")} error={errors.city} autoComplete="address-level2" />
+              <Field label="State" value={form.state} onChange={update("state")} error={errors.state} autoComplete="address-level1" />
+              <Field label="Postal Code" value={form.postalCode} onChange={update("postalCode")} error={errors.postalCode} autoComplete="postal-code" />
+              <label className="field">
+                <span className="field__label">Country</span>
+                <select value={form.country} onChange={update("country")}>
+                  <option>United States</option>
+                  <option>Canada</option>
+                  <option>United Kingdom</option>
+                  <option>India</option>
+                  <option>Australia</option>
+                </select>
+              </label>
+            </div>
+            <button type="submit" className="address-form__submit">
+              Save address
+            </button>
+          </form>
+        )}
 
-            <Field
-              label="Postal Code"
-              value={form.postalCode}
-              onChange={update("postalCode")}
-              error={errors.postalCode}
-              autoComplete="postal-code"
-            />
-            <label className="field">
-              <span className="field__label">Country</span>
-              <select value={form.country} onChange={update("country")}>
-                <option>United States</option>
-                <option>Canada</option>
-                <option>United Kingdom</option>
-                <option>India</option>
-                <option>Australia</option>
-              </select>
-            </label>
-          </div>
-
-          <button type="submit" className="address-form__submit">
-            Continue to Payment
-          </button>
-        </form>
+        <button
+          type="button"
+          className="address-form__submit"
+          style={{ marginTop: "16px" }}
+          onClick={handleContinue}
+          disabled={!selectedAddressId}
+        >
+          Continue to Payment
+        </button>
       </div>
     </div>
   );
@@ -429,6 +527,247 @@ function OrderConfirmation({ shippingAddress, onBackToBag }) {
   );
 }
 
+/*==========================================payment page ===========================*/
+
+/* ============================================================
+   Step 3 — Payment
+   ============================================================ */
+
+function PaymentPage({ checkoutData, onBack }) {
+  const { cartItems, cartTotal, API_URL, setCart } = useContext(Context);
+  const navigate = useNavigate();
+  const [placing, setPlacing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("upi"); // "cod" | "upi" | "card"
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => document.body.removeChild(script);
+  }, []);
+
+  const buildItems = () =>
+    cartItems.map((item) => ({
+      productId: item.id,
+      variantId: item.variantId || undefined,
+      size: item.size || undefined,
+      quantity: item.qty,
+    }));
+
+  // ---------------- Cash on Delivery ----------------
+  const handleCodOrder = async () => {
+    setPlacing(true);
+    try {
+      const token = localStorage.getItem("token");
+
+      const { data } = await axios.post(
+        `${API_URL}/order/placeorder`,
+        { items: buildItems(), addressId: checkoutData.addressId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (!data.success) {
+        toast.error(data.message || "Could not place order");
+        navigate("/cart");
+        return;
+      }
+
+      toast.success("Order placed! Pay on delivery.");
+      setCart({});
+      navigate(`/order-confirmation/${data.orderId}`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Something went wrong");
+      navigate("/cart");
+    } finally {
+      setPlacing(false);
+    }
+  };
+
+  // ---------------- UPI / Card via Razorpay ----------------
+  const handleOnlinePayment = async () => {
+    setPlacing(true);
+    try {
+      const token = localStorage.getItem("token");
+
+      const { data } = await axios.post(
+        `${API_URL}/order/placeorder`,
+        { items: buildItems(), addressId: checkoutData.addressId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (!data.success) {
+        toast.error(data.message || "Could not start payment");
+        navigate("/cart");
+        return;
+      }
+
+      const { order, orderId, key } = data;
+
+      const options = {
+        key,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Humi's Attars",
+        description: "Order Payment",
+        order_id: order.id,
+
+        // restrict the modal to just the method the user picked on this page
+        method: {
+          netbanking: false,
+          wallet: false,
+          card: paymentMethod === "card",
+          upi: paymentMethod === "upi",
+        },
+
+        handler: async (response) => {
+          try {
+            const verifyRes = await axios.post(
+              `${API_URL}/order/verifypayment`,
+              {
+                orderId,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (verifyRes.data.success) {
+              toast.success("Payment successful!");
+              setCart({});
+              navigate(`/order-confirmation/${orderId}`);
+            } else {
+              toast.error("Payment verification failed");
+              navigate("/cart");
+            }
+          } catch (err) {
+            toast.error(err.response?.data?.message || "Payment verification failed");
+            navigate("/cart");
+          }
+        },
+
+        modal: {
+          ondismiss: () => {
+            toast.error("Payment cancelled");
+            navigate("/cart");
+          },
+        },
+
+        prefill: {
+          name: checkoutData?.address?.fullName || "",
+          contact: checkoutData?.address?.phone || "",
+        },
+        theme: { color: "#c9a227" },
+      };
+
+      const rzp = new window.Razorpay(options);
+
+      rzp.on("payment.failed", () => {
+        toast.error("Payment failed. Please try again.");
+        navigate("/cart");
+      });
+
+      rzp.open();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Something went wrong");
+      navigate("/cart");
+    } finally {
+      setPlacing(false);
+    }
+  };
+
+  const handlePlaceOrder = () => {
+    if (!checkoutData?.addressId) {
+      toast.error("Missing shipping address");
+      navigate("/cart");
+      return;
+    }
+
+    if (paymentMethod === "cod") {
+      handleCodOrder();
+    } else {
+      handleOnlinePayment();
+    }
+  };
+
+  return (
+    <div className="bag-layout">
+      <div className="bag-main">
+        <button type="button" className="step-back" onClick={onBack}>
+          <BackIcon /> Back to address
+        </button>
+
+        <header className="bag-header">
+          <h1 className="bag-header__title">Payment</h1>
+          <p className="bag-header__subtitle">
+            Review your order and complete payment
+          </p>
+        </header>
+
+        {checkoutData?.address && (
+          <div className="confirmation__address">
+            <strong>{checkoutData.address.fullName}</strong>
+            <span>{checkoutData.address.addressLine1}</span>
+            <span>
+              {checkoutData.address.city}, {checkoutData.address.state}{" "}
+              {checkoutData.address.postalCode}
+            </span>
+            <span>{checkoutData.address.country}</span>
+          </div>
+        )}
+
+        {/* ---------------- Payment method selector ---------------- */}
+        <div className="pm-block">
+          <span className="pd-label">Choose Payment Method</span>
+          <div className="pm-options">
+            <button
+              type="button"
+              className={`pm-option${paymentMethod === "upi" ? " active" : ""}`}
+              onClick={() => setPaymentMethod("upi")}
+            >
+              <span className="pm-option__title">UPI</span>
+              <span className="pm-option__sub">Pay via any UPI app</span>
+            </button>
+
+            <button
+              type="button"
+              className={`pm-option${paymentMethod === "card" ? " active" : ""}`}
+              onClick={() => setPaymentMethod("card")}
+            >
+              <span className="pm-option__title">Card</span>
+              <span className="pm-option__sub">Credit / Debit card</span>
+            </button>
+
+            <button
+              type="button"
+              className={`pm-option${paymentMethod === "cod" ? " active" : ""}`}
+              onClick={() => setPaymentMethod("cod")}
+            >
+              <span className="pm-option__title">Cash on Delivery</span>
+              <span className="pm-option__sub">Pay when it arrives</span>
+            </button>
+          </div>
+        </div>
+
+        <p className="confirmation__total">Order total: {formatUSD(cartTotal)}</p>
+
+        <button
+          type="button"
+          className="address-form__submit"
+          onClick={handlePlaceOrder}
+          disabled={placing}
+        >
+          {placing
+            ? "Processing..."
+            : paymentMethod === "cod"
+              ? "Place Order (COD)"
+              : "Place Order & Pay"}
+        </button>
+      </div>
+    </div>
+  );
+}
 /* ---------------------------- Icons ---------------------------- */
 
 function TrashIcon() {

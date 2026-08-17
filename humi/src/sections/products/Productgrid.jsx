@@ -1,13 +1,9 @@
-import { useState, useMemo, useContext } from "react";
+import { useState, useMemo, useContext, useEffect } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
 import "./Productgrid.css";
-import { PRODUCTS } from "../../assets/Assests";
 import { Context } from "../../context/Context";
 import { Link } from "react-router-dom";
-
-
-/* ---------------- Data ---------------- */
-
-
 
 /* ---------------- Small building blocks ---------------- */
 
@@ -53,7 +49,6 @@ function formatINR(n) {
 /* ---------------- Product card ---------------- */
 
 function ProductCard({ product, onAdd }) {
-
   const [qty, setQty] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
 
@@ -70,8 +65,6 @@ function ProductCard({ product, onAdd }) {
 
   return (
     <article className="pg-card">
-      {/* NEW: clickable area -> product detail page. Only wraps media + title + rating + price,
-          so the stepper/add-to-cart controls below stay untouched and don't trigger navigation. */}
       <Link to={`/product/${product.id}`} className="pg-card__link">
         <div className="pg-card__media">
           {product.compareAt && <span className="pg-card__badge">Sale</span>}
@@ -201,7 +194,7 @@ function CartPanel({ open, items, onClose, onUpdateQty, onRemove, total }) {
               <span>Subtotal</span>
               <strong>{formatINR(total)}</strong>
             </div>
-           <Link to="/cart"> <button type="button" className="pg-add-btn pg-add-btn--full">
+            <Link to="/cart"> <button type="button" className="pg-add-btn pg-add-btn--full">
               Go to Cart Page
             </button></Link>
           </div>
@@ -214,19 +207,63 @@ function CartPanel({ open, items, onClose, onUpdateQty, onRemove, total }) {
 /* ---------------- Main export ---------------- */
 
 export default function Productgrid() {
-  const { cart, setCart, updateQty, addToCart, removeFromCart, cartItems, cartCount, cartTotal } = useContext(Context) // { [id]: qty }
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  
+  const {
+    cart, setCart, updateQty, addToCart, removeFromCart,
+    cartItems, cartCount, cartTotal, API_URL,
+  } = useContext(Context);
 
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // ---------------- Fetch products from backend ----------------
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_URL}/product/get`);
+
+      // no success field from backend — check products array instead
+      const mapped = (res.data.products || []).map((p) => ({
+        id: p._id,
+        name: p.name,
+        slug: p.slug,
+        image: p.images?.[0]?.url || "",
+        alt: p.name,
+        price: p.discountPrice || p.price,
+        compareAt: p.discountPrice ? p.price : null,
+        rating: p.ratings?.average || 0,
+        reviews: p.ratings?.count || 0,
+        category: p.category,
+        stock: p.stock,
+        variants: p.variants,
+      }));
+
+      setProducts(mapped);
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || "Something went wrong";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   return (
     <div className="pg-page">
       <section className="pg">
-        <div className="pg__grid">
-          {PRODUCTS.map((product) => (
-            <ProductCard key={product.id} product={product} onAdd={addToCart} />
-          ))}
-        </div>
+        {loading ? (
+          <p className="pg__loading">Loading products...</p>
+        ) : products.length === 0 ? (
+          <p className="pg__empty">No products found.</p>
+        ) : (
+          <div className="pg__grid">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} onAdd={addToCart} />
+            ))}
+          </div>
+        )}
 
         <div className="pg__view-all-wrap">
           <Link to="/shop"> <button type="button" className="pg__view-all">View all</button></Link>

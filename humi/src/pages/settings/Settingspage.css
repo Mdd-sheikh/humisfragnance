@@ -377,6 +377,19 @@ select:focus {
     margin: 0;
 }
 
+.dateofbirt{
+    display: grid;
+}
+
+.dateofbirt input{
+  height: 35px;
+  background-color: transparent;
+  color: black;
+   border: 1px solid #cfe4cf;
+   border-radius: 5px;
+   margin-top: 10px;
+}
+
 /* ---------- Addresses ---------- */
 .address-list {
     list-style: none;

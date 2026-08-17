@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext, useEffect } from "react";
 import {
     FiChevronDown,
     FiUser,
@@ -22,6 +22,10 @@ import {
     FiHeadphones,
 } from "react-icons/fi";
 import "./Settingspage.css";
+import axios from 'axios'
+import { Context } from "../../context/Context";
+import { toast } from "react-toastify";
+import { useParams } from "react-router-dom";
 
 // ---------- Mock data (swap with real API calls) ----------
 const initialOrders = [
@@ -63,26 +67,188 @@ export default function Settingspage() {
     const [avatar, setAvatar] = useState(
         "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=300&h=300&fit=crop&crop=faces"
     );
+
+    // url fron context
+    const { API_URL } = useContext(Context)
+
+
     const fileInputRef = useRef(null);
+
+
     const [editingProfile, setEditingProfile] = useState(false);
+    const [profileImage, setProfileImage] = useState(null)
+    const [previewImage, setPreviewImage] = useState("")
+
+    const [getProfile, setGetProfile] = useState([])
     const [profile, setProfile] = useState({
-        name: "Amara Vance",
-        memberSince: "October 2023",
-        tier: "Elite Tier",
-        email: "amara.vance@email.com",
-        phone: "+91 98300 00000",
-        dob: "1996-04-12",
+        name: "",
+        memberSince: "",
+        tier: "",
+        email: "",
+        phone: "",
+        dob: "",
+        profileImage: "",
+        gender: ""
     });
+
+
+
+    // submit 
+    const updateProfile = async (profile, imageFile) => {
+        try {
+            const formData = new FormData();
+
+            formData.append("firstName", profile.name);
+            formData.append("phone", profile.phone);
+            formData.append("dob", profile.dob);
+            formData.append("gender", profile.gender);
+            formData.append("tier", profile.tier);
+            formData.append("email", profile.email)
+
+            // only append if user selected a new image
+            if (profileImage) {
+                formData.append("profileImage", profileImage);
+            }
+
+            const token = localStorage.getItem("token"); // adjust to how you store it
+
+            const response = axios.post(`${URL}/profile/updateprofile`, {
+                Headers: {
+                    Authorization: `Bearer ${token}`
+
+                },
+                formData
+            })
+
+            const data = await response.json();
+
+            if (!data.success) {
+                console.error(data.message);
+                return null;
+            }
+
+            return data.data; // updated user object
+
+        } catch (error) {
+            console.error("Update profile failed:", error);
+            return null;
+        }
+    };
+
+    // post data
+
+
+
+
+    const postProfile = async () => {
+        try {
+            const formData = new FormData();
+
+            formData.append("firstName", profile.name);
+            formData.append("phone", profile.phone);
+            formData.append("dob", profile.dob);
+            formData.append("gender", profile.gender);
+            formData.append("tier", profile.tier);
+            formData.append("email", profile.email)
+
+
+            if (profileImage) {
+                formData.append("avatarUrl", profileImage);
+            }
+
+            const token = localStorage.getItem("token"); // adjust to how you store it
+
+            const response = await axios.post(`${API_URL}/profile/createprofile`, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                    // no Content-Type — axios sets multipart boundary automatically
+                }
+            });
+
+            if (!response.data.success) {
+                console.error(response.data.message);
+                return null;
+            }
+
+            return response.data.data; // saved user object 
+
+        } catch (error) {
+            console.error("Post profile failed:", error.response?.data?.message || error.message);
+            return null;
+        }
+    };
+
+
+    // get all profile data 
+    const fetchMyProfile = async () => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await axios.get("http://localhost:5000/api/profile/getprofile", {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!response.data.success) {
+                console.error(response.data.message);
+                return null;
+            }
+
+            return response.data.data; // the profile object you showed above
+
+        } catch (error) {
+            console.error("Fetch profile failed:", error.response?.data?.message || error.message);
+            return null;
+        }
+    };
+
+
+    useEffect(() => {
+        const loadProfile = async () => {
+            const data = await fetchMyProfile();
+            if (data) {
+                setProfile({
+                    name: data.firstName,
+                    memberSince: data.createdAt,
+                    tier: data.tier || "",
+                    email: data.email,
+                    phone: data.phone,
+                    dob: data.dob?.split("T")[0], // format for <input type="date">
+                    profileImage: data.avatarUrl,
+                    gender: data.gender
+                });
+            }
+        };
+
+        loadProfile();
+    }, [])
+
+
+
+
+    //profile handler to handle inputs of personal data
+    const Handlerprofile = (e) => {
+        setProfile({ ...profile, [e.target.name]: e.target.value })
+    }
+
     const [profileDraft, setProfileDraft] = useState(profile);
 
-    const openGallery = () => fileInputRef.current?.click();
 
+
+    const openGallery = () => fileInputRef.current?.click();
+    // profile image in profileimage
     const handleAvatarChange = (e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setAvatar(url);
-        }
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setProfileImage(file);
+        setPreviewImage(URL.createObjectURL(file)); // instant local preview
+
+        /*  const updated = await uploadProfileImage(file);
+          if (updated) {
+              setPreviewImage(updated.profileImage); // switch to real Cloudinary URL once uploaded
+          }*/
     };
 
     const saveProfile = () => {
@@ -120,21 +286,131 @@ export default function Settingspage() {
     };
 
     // ----- addresses -----
-    const [addresses, setAddresses] = useState(initialAddresses);
-    const [newAddress, setNewAddress] = useState("");
+    const [addresses, setAddresses] = useState({
+        fullName: "",
+        phone: "",
+        addressLine1: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        country: ""
 
-    const addAddress = () => {
-        if (!newAddress.trim()) return;
-        setAddresses((prev) => [
-            ...prev,
-            { id: Date.now(), label: "New address", line: newAddress.trim(), isDefault: false },
-        ]);
-        setNewAddress("");
+    });
+
+    const Addaddress = async () => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await axios.post(
+                `${API_URL}/personal/address/addtoaddress`,
+                addresses,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                toast.success("Address added");
+                setAddresses({
+                    fullName: "",
+                    phone: "",
+                    addressLine1: "",
+                    city: "",
+                    state: "",
+                    postalCode: "",
+                    country: ""
+
+                });
+                getAddress();
+
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to add address");
+        }
     };
 
-    const removeAddress = (id) => {
-        setAddresses((prev) => prev.filter((a) => a.id !== id));
+
+
+
+
+    {/*========================================================= get address data */ }
+
+
+
+    const [address, setAddress] = useState([]); // array now
+
+
+
+
+    const getAddress = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            // 1 — confirm token exists
+
+            const response = await axios.get(
+                `${API_URL}/personal/address/getaddress`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+            // 2 — see exactly what backend sent
+
+            if (!response.data.success) {
+                console.error(response.data.message);
+                return [];
+            }
+
+            return response.data.data;
+
+        } catch (error) {
+            console.log("Error caught:", error.response?.data || error.message); // 3 — see if it's even reaching backend
+            return [];
+        }
     };
+
+    useEffect(() => {
+        const loadAddress = async () => {
+            const data = await getAddress();
+            setAddress(data);
+        };
+        loadAddress();
+    }, []);
+
+    // ...
+    {/*=============================================delete address function======================*/ }
+    const removeAddress = async (addressId) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await axios.delete(
+                `${API_URL}/personal/address/deleteaddress/${addressId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                toast.success("Address deleted");
+                setAddress((prev) => prev.filter((a) => a._id !== addressId)); // remove from UI without refetching
+            }
+
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to delete address");
+        }
+    };
+
+
+    const HandleAddress = (e) => {
+        setAddresses({ ...addresses, [e.target.name]: e.target.value })
+    }
+
+
 
     const makeDefault = (id) => {
         setAddresses((prev) => prev.map((a) => ({ ...a, isDefault: a.id === id })));
@@ -189,7 +465,7 @@ export default function Settingspage() {
                         onClick={openGallery}
                         aria-label="Change profile photo"
                     >
-                        <img src={avatar} alt="Profile" className="avatar-img" />
+                        <img src={profile.profileImage} alt="Profile" className="avatar-img" />
                         <span className="avatar-edit-badge">
                             <FiEdit2 size={12} />
                         </span>
@@ -232,25 +508,45 @@ export default function Settingspage() {
                     <div className="field">
                         <label>Full name</label>
                         <input
-                            value={profileDraft.name}
-                            onChange={(e) => setProfileDraft({ ...profileDraft, name: e.target.value })}
+                            name="name"
+                            value={profile.name}
+                            onChange={Handlerprofile}
                         />
                     </div>
                     <div className="field">
                         <label>Email</label>
                         <input
-                            value={profileDraft.email}
-                            onChange={(e) => setProfileDraft({ ...profileDraft, email: e.target.value })}
+                            name="email"
+                            value={profile.email}
+                            onChange={Handlerprofile}
                         />
                     </div>
                     <div className="field">
                         <label>Phone</label>
                         <input
-                            value={profileDraft.phone}
-                            onChange={(e) => setProfileDraft({ ...profileDraft, phone: e.target.value })}
+                            name="phone"
+                            value={profile.phone}
+                            onChange={Handlerprofile}
                         />
                     </div>
-                    <button type="button" className="btn btn-primary" onClick={saveProfile}>
+                    <div className="dateofbirt">
+                        <label htmlFor="">Date Of Birth</label>
+                        <input
+                            type="date"
+                            name="dob"
+                            placeholder="date of birth"
+                            value={profile.dob}
+                            onChange={Handlerprofile} />
+                    </div>
+                    <div className="genders">
+                        <select name="gender" onChange={Handlerprofile} id="">
+                            <label htmlFor="">Gender</label>
+                            <option value="option">Option</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                    <button type="button" className="btn btn-primary" onClick={postProfile}>
                         Save changes
                     </button>
                 </section>
@@ -351,21 +647,23 @@ export default function Settingspage() {
                             onToggle={() => toggleSection("addresses")}
                         >
                             <ul className="address-list">
-                                {addresses.map((a) => (
-                                    <li key={a.id} className="address-item">
+                                {address.map((a) => (
+                                    <li key={a._id} className="address-item">
                                         <div>
                                             <span className="address-label">
                                                 {a.label}
                                                 {a.isDefault && <span className="pill">Default</span>}
                                             </span>
-                                            <span className="address-line">{a.line}</span>
+                                            <span className="address-line">
+                                                {a.addressLine1}, {a.city}, {a.state} {a.postalCode}
+                                            </span>
                                         </div>
                                         <div className="address-actions">
                                             {!a.isDefault && (
                                                 <button
                                                     type="button"
                                                     className="text-btn"
-                                                    onClick={() => makeDefault(a.id)}
+                                                    onClick={() => makeDefault(a._id)}
                                                 >
                                                     Make default
                                                 </button>
@@ -373,7 +671,7 @@ export default function Settingspage() {
                                             <button
                                                 type="button"
                                                 className="icon-only-btn"
-                                                onClick={() => removeAddress(a.id)}
+                                                onClick={() => removeAddress(a._id)}
                                                 aria-label="Remove address"
                                             >
                                                 <FiTrash2 />
@@ -384,11 +682,19 @@ export default function Settingspage() {
                             </ul>
                             <div className="add-address-row">
                                 <input
-                                    placeholder="Add a new address"
-                                    value={newAddress}
-                                    onChange={(e) => setNewAddress(e.target.value)}
+                                    placeholder="Fullname"
+                                    value={addresses.fullName}
+                                    name="fullName"
+                                    onChange={HandleAddress}
                                 />
-                                <button type="button" className="btn btn-primary btn-sm" onClick={addAddress}>
+                                <input type="phone" value={addresses.phone} name="phone" id="" placeholder=" Phone Number" onChange={HandleAddress} />
+                                <input type="text" value={addresses.addressLine1} name="addressLine1" placeholder="Addres Line 1" onChange={HandleAddress} />
+                                <input type="text" name="city" value={addresses.city} placeholder="City" onChange={HandleAddress} />
+                                <input type="text" name="state" value={addresses.state} placeholder="state" onChange={HandleAddress} />
+                                <input type="Number" name="postalCode" value={addresses.postalCode} placeholder="postalCode" onChange={HandleAddress} />
+                                <input type="text" name="country" value={addresses.country} placeholder="Country" onChange={HandleAddress} />
+
+                                <button type="button" className="btn btn-primary btn-sm" onClick={Addaddress} >
                                     <FiPlus /> Add
                                 </button>
                             </div>
