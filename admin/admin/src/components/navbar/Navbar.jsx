@@ -27,7 +27,7 @@ const Navbar = () => {
                     </button>
 
                     <span className="header__logo">
-                        Auren<span className="header__logo-accent">.</span>
+                        Humis<span className="header__logo-accent">.</span>
                     </span>
                 </div>
 
