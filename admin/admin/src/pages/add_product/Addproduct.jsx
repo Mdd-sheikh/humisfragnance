@@ -6,7 +6,7 @@ import {
   Trash2,
   ChevronDown,
 } from "lucide-react";
-import "./AddProduct.css";
+import "./Addproduct.css";
 import axios from 'axios'
 import { Context } from "../../context/Context";
 import { toast } from "react-toastify";
