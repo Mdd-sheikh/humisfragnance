@@ -1,0 +1,86 @@
+/* toast.css */
+.Toastify__toast {
+    width: 250px;
+    height: 20px;
+    min-height: 40px;
+    /* toastify sets a min-height by default, must override */
+    border-radius: 6px;
+    font-family: "Inter", sans-serif;
+    font-size: 10px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.Toastify__toast-container {
+    width: 50px;
+}
+
+.Toastify__toast-body {
+    margin: 0;
+    padding: 0;
+    font-size: 10px;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.Toastify__toast--success {
+    background: #1e293b;
+    color: #4ade80;
+    border-left: 3px solid #22c55e;
+}
+
+.Toastify__toast--error {
+    background: #1e293b;
+    color: #c9a227;
+    border-left: 3px solid #ef4444;
+}
+
+.Toastify__toast--warning {
+    background: #1e293b;
+    color: #facc15;
+    border-left: 3px solid #eab308;
+}
+
+.Toastify__toast--info {
+    background: #1e293b;
+    color: #38bdf8;
+    border-left: 3px solid #0ea5e9;
+}
+
+.Toastify__progress-bar {
+    height: 2px;
+}
+
+.Toastify__close-button {
+    display: none;
+    /* no room for a close button at this size */
+}
+
+@media only screen and (max-width: 600px) {
+    .Toastify__toast-container {
+        width: 90vw;
+        left: 5vw;
+        right: 5vw;
+    }
+
+    .Toastify__toast {
+        width: 100%;
+        height: auto;
+        min-height: 40px;
+        font-size: 13px;
+        padding: 10px 12px;
+        border-radius: 10px;
+    }
+
+    .Toastify__toast-body {
+        white-space: normal;
+        /* allow wrapping on mobile so text isn't cut off */
+        font-size: 13px;
+    }
+}
