@@ -1,0 +1,698 @@
+/* ===================================================================
+   Humi's Fragrance — Settings Page
+   Mobile-first. Desktop two-column layout kicks in at 900px.
+=================================================================== */
+
+.settings-page {
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Manrope", -apple-system, sans-serif;
+
+    --color-primary: #755b00;
+    --color-primary-light: #c9a227;
+    --color-primary-dark: #4b3a00;
+
+    --bg-primary: #fbf9f9;
+    --bg-card: #ffffff;
+    --bg-muted: #dbdad9;
+    --bg-panel: #f2f0ee;
+
+    --text-primary: #1b1c1c;
+    --text-secondary: #4d4635;
+
+    --border-color: #d1c5af;
+    --success: #2e7d32;
+    --error: #a13a3a;
+
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    min-height: 100vh;
+    padding: 20px 16px 64px;
+    box-sizing: border-box;
+}
+
+.settings-page * {
+    box-sizing: border-box;
+}
+
+/* ---------- Profile header ---------- */
+.profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.avatar-wrap {
+    position: relative;
+}
+
+.avatar-btn {
+    position: relative;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.avatar-img {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 2px solid var(--border-color);
+}
+
+.avatar-edit-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-primary-light);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-primary);
+}
+
+.profile-name {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.profile-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 4px 0 0;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 10px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.btn:active {
+    opacity: 0.85;
+}
+
+.btn-primary {
+    background: var(--color-primary-light);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.btn-outline:hover {
+    background: var(--bg-panel);
+}
+
+.btn-sm {
+    padding: 8px 14px;
+    font-size: 0.72rem;
+}
+
+/* ---------- Edit profile card ---------- */
+.edit-profile-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* ---------- Layout columns ---------- */
+.settings-columns {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.settings-col {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+@media (min-width: 900px) {
+    .settings-columns {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 48px;
+    }
+    .settings-col {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+/* ---------- Groups ---------- */
+.settings-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.group-title {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    margin: 0 0 6px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.group-title-icon {
+    color: var(--color-primary-light);
+}
+
+/* ---------- Accordion rows ---------- */
+.setting-row {
+    border-bottom: 1px solid var(--bg-muted);
+}
+
+.setting-row-header {
+    width: 100%;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 2px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    color: var(--text-primary);
+}
+
+.setting-row-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.setting-row-icon {
+    color: var(--color-primary-light);
+    display: flex;
+}
+
+.chevron {
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+}
+
+.chevron-open {
+    transform: rotate(180deg);
+}
+
+.setting-row-panel {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+}
+
+.setting-row-panel.open {
+    max-height: 900px;
+}
+
+.setting-row-panel-inner {
+    padding: 4px 2px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ---------- Personal info display ---------- */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+@media (min-width: 480px) {
+    .info-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.info-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.info-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+}
+
+.info-value {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* ---------- Forms ---------- */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+}
+
+.field input,
+.field textarea,
+.stacked-form input,
+.track-form input,
+select {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    padding: 10px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    width: 100%;
+}
+
+.field input:focus,
+.field textarea:focus,
+select:focus {
+    outline: 2px solid var(--color-primary-light);
+    outline-offset: 1px;
+}
+
+.stacked-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.password-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrap input {
+    padding-right: 38px;
+}
+
+.eye-btn {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+}
+
+.field-error {
+    color: var(--error);
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.success-note {
+    color: var(--success);
+    font-size: 0.85rem;
+    background: #eaf3ea;
+    border: 1px solid #cfe4cf;
+    padding: 8px 10px;
+    border-radius: 4px;
+    margin: 0;
+}
+
+.dateofbirt{
+    display: grid;
+}
+
+.dateofbirt input{
+  height: 35px;
+  background-color: transparent;
+  color: black;
+   border: 1px solid #cfe4cf;
+   border-radius: 5px;
+   margin-top: 10px;
+}
+
+/* ---------- Addresses ---------- */
+.address-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.address-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--bg-panel);
+    padding: 10px 12px;
+    border-radius: 6px;
+    flex-wrap: wrap;
+}
+
+.address-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.address-line {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.pill {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    background: var(--color-primary-light);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.address-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.text-btn {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+}
+
+.icon-only-btn {
+    background: none;
+    border: none;
+    color: var(--error);
+    cursor: pointer;
+    display: flex;
+}
+
+.add-address-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.add-address-row input {
+    flex: 1;
+    min-width: 150px;
+}
+
+/* ---------- Orders ---------- */
+.order-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg-panel);
+    border-radius: 6px;
+    flex-wrap: wrap;
+}
+
+.order-id {
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: block;
+}
+
+.order-date {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: block;
+}
+
+.order-items {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    display: block;
+    margin-top: 2px;
+}
+
+.order-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.order-total {
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.status-pill {
+    font-size: 0.68rem;
+    padding: 2px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.status-delivered {
+    background: #eaf3ea;
+    color: var(--success);
+}
+
+.status-cancelled {
+    background: #f6e6e6;
+    color: var(--error);
+}
+
+/* ---------- Tracking ---------- */
+.track-form {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.track-form input {
+    flex: 1;
+    min-width: 150px;
+}
+
+.track-timeline {
+    margin-top: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.track-heading {
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin: 0 0 4px;
+}
+
+.track-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+}
+
+.track-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--bg-muted);
+    flex-shrink: 0;
+}
+
+.track-dot.done {
+    background: var(--color-primary-light);
+}
+
+.track-step-pending {
+    color: var(--text-secondary);
+}
+
+/* ---------- Preferences ---------- */
+.pref-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 2px;
+    border-bottom: 1px solid var(--bg-muted);
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.pref-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+}
+
+.pref-row select {
+    width: auto;
+    padding: 6px 10px;
+    font-size: 0.82rem;
+}
+
+/* Toggle switch */
+.toggle {
+    width: 42px;
+    height: 24px;
+    border-radius: 20px;
+    background: var(--bg-muted);
+    border: none;
+    position: relative;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+}
+
+.toggle-on {
+    background: var(--color-primary-light);
+}
+
+.toggle-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-on .toggle-knob {
+    transform: translateX(18px);
+}
+
+/* ---------- Static text (Help/Privacy/Terms) ---------- */
+.static-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ---------- Concierge button ---------- */
+.concierge-btn {
+    width: 100%;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 14px;
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    margin-top: 4px;
+}
+
+.concierge-btn:hover {
+    background: var(--bg-muted);
+}
+
+/* ---------- Accessibility ---------- */
+.setting-row-header:focus-visible,
+.btn:focus-visible,
+.toggle:focus-visible,
+.avatar-btn:focus-visible {
+    outline: 2px solid var(--color-primary-light);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .setting-row-panel,
+    .chevron,
+    .toggle-knob,
+    .toggle {
+        transition: none;
+    }
+}

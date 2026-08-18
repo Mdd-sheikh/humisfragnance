@@ -1,0 +1,362 @@
+/* ===================================
+   HERO SECTION
+=================================== */
+
+.hero {
+    position: relative;
+    overflow: hidden;
+
+    outline: none;
+
+    user-select: none;
+    -webkit-user-select: none;
+
+    touch-action: pan-y;
+}
+
+.hero-track {
+    position: relative;
+
+    height: 520px;
+}
+
+/* ===================================
+   SLIDE
+=================================== */
+
+.hero-slide {
+    position: absolute;
+    inset: 0;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: scale(1.03);
+
+    transition: opacity .8s ease, transform 1.2s ease;
+
+    pointer-events: none;
+}
+
+.hero-slide.active {
+    opacity: 1;
+    visibility: visible;
+
+    transform: scale(1);
+
+    pointer-events: auto;
+}
+
+/* ===================================
+   BACKGROUND IMAGE
+=================================== */
+
+.hero-bg {
+    position: absolute;
+    inset: 0;
+
+    z-index: 0;
+}
+
+.hero-bg-image {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    object-position: center;
+}
+
+.hero-bg-placeholder {
+    width: 100%;
+    height: 100%;
+
+    background:
+        radial-gradient(circle at 70% 40%, rgba(212, 175, 120, .35), transparent 60%),
+        repeating-linear-gradient(45deg,
+            rgba(0, 0, 0, .05),
+            rgba(0, 0, 0, .05) 10px,
+            rgba(0, 0, 0, .02) 10px,
+            rgba(0, 0, 0, .02) 20px),
+        linear-gradient(135deg, #efe4cf 0%, #d8c6a1 100%);
+}
+
+/* Scrim so text stays readable over any photo */
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, .82) 0%,
+            rgba(255, 255, 255, .55) 35%,
+            rgba(255, 255, 255, .15) 60%,
+            rgba(255, 255, 255, 0) 80%),
+        linear-gradient(0deg,
+            rgba(0, 0, 0, .25) 0%,
+            rgba(0, 0, 0, 0) 40%);
+}
+
+/* ===================================
+   CONTENT (overlaid on image)
+=================================== */
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    padding: 24px var(--space-sm) 64px;
+
+    max-width: 420px;
+}
+
+.hero-eyebrow {
+    display: inline-block;
+
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+
+    color: var(--color-primary);
+
+    margin-bottom: 12px;
+}
+
+.hero-title {
+    font-family: var(--font-heading);
+    font-size: 30px;
+    line-height: 1.15;
+    font-weight: 700;
+
+    color: var(--text-primary, #1f1b16);
+
+    margin-bottom: 12px;
+}
+
+.hero-description {
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    line-height: 1.6;
+
+    color: #514c42;
+
+    margin-bottom: 22px;
+}
+
+.hero-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    align-self: flex-start;
+
+    height: 44px;
+    padding: 0 26px;
+
+    background: var(--color-primary);
+    color: #fff;
+
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    text-decoration: none;
+
+    border-radius: var(--radius-md);
+
+    transition: opacity .3s;
+}
+
+.hero-cta:hover {
+    opacity: .88;
+}
+
+/* ===================================
+   ARROWS
+=================================== */
+
+.hero-arrow {
+    position: absolute;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, .8);
+
+    color: var(--text-primary, #1f1b16);
+    font-size: 16px;
+
+    cursor: pointer;
+
+    z-index: 3;
+
+    transition: .3s;
+}
+
+.hero-arrow:hover {
+    background: #fff;
+    color: var(--color-primary);
+}
+
+.hero-arrow-left {
+    left: 10px;
+}
+
+.hero-arrow-right {
+    right: 10px;
+}
+
+/* ===================================
+   DOTS + PROGRESS
+=================================== */
+
+.hero-dots {
+    position: absolute;
+    bottom: 20px;
+    left: var(--space-sm);
+
+    display: flex;
+    gap: 8px;
+
+    z-index: 3;
+}
+
+.hero-dot {
+    position: relative;
+    overflow: hidden;
+
+    width: 26px;
+    height: 4px;
+
+    border: none;
+    border-radius: 2px;
+
+    background: rgba(0, 0, 0, .18);
+
+    cursor: pointer;
+
+    padding: 0;
+}
+
+.hero-dot-progress {
+    position: absolute;
+    inset: 0;
+
+    transform-origin: left;
+    transform: scaleX(0);
+
+    background: var(--color-primary);
+
+    animation-name: fillProgress;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+@keyframes fillProgress {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
+}
+
+/* ===================================
+   DESKTOP LAYOUT
+=================================== */
+
+@media (min-width: 900px) {
+
+    .hero-track {
+        height: 620px;
+    }
+
+    .hero-content {
+        justify-content: center;
+
+        padding: 0 0 0 80px;
+
+        max-width: 520px;
+    }
+
+    .hero-eyebrow {
+        font-size: 12px;
+        letter-spacing: .22em;
+    }
+
+    .hero-title {
+        font-size: 50px;
+    }
+
+    .hero-description {
+        font-size: 15px;
+
+        max-width: 400px;
+    }
+
+    .hero-overlay {
+        background: linear-gradient(90deg,
+                rgba(255, 255, 255, .85) 0%,
+                rgba(255, 255, 255, .55) 38%,
+                rgba(255, 255, 255, .1) 62%,
+                rgba(255, 255, 255, 0) 80%);
+    }
+
+    .hero-arrow {
+        width: 46px;
+        height: 46px;
+        font-size: 20px;
+    }
+
+    .hero-arrow-left {
+        left: 28px;
+    }
+
+    .hero-arrow-right {
+        right: 28px;
+    }
+
+    .hero-dots {
+        left: 80px;
+        bottom: 40px;
+    }
+
+    .hero-dot {
+        width: 32px;
+    }
+}
+
+/* ===================================
+   REDUCED MOTION
+=================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .hero-slide {
+        transition: opacity .3s ease;
+        transform: none;
+    }
+
+    .hero-dot-progress {
+        display: none;
+    }
+}

@@ -1,0 +1,160 @@
+:root {
+  /* ===========================
+     COLORS
+  =========================== */
+
+  /* Brand */
+
+  
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --button-color: blue;
+  --color-primary: #755b00;
+  --color-primary-light: #c9a227;
+  --color-primary-dark: #4b3a00;
+  --color-primary-accent: #ecc246;
+
+  --color-secondary: #5f5e5e;
+  --color-secondary-light: #e2dfde;
+  --color-secondary-dark: #636262;
+
+  --color-tertiary: #5d5f5f;
+  --color-tertiary-light: #a6a7a7;
+  --color-tertiary-dark: #3b3d3d;
+
+  /* Backgrounds */
+  --bg-primary: #fbf9f9;
+  --bg-secondary: #f5f3f3;
+  --bg-surface: #efeded;
+  --bg-card: #ffffff;
+  --bg-muted: #dbdad9;
+  --bg-elevated: #e9e8e7;
+  --bg-hover: #e3e2e2;
+
+  /* Text */
+  --text-primary: #1b1c1c;
+  --text-secondary: #4d4635;
+  --text-light: #ffffff;
+  --text-dark: #241a00;
+
+  /* Borders */
+  --border-color: #d1c5af;
+  --border-dark: #7f7663;
+
+  /* States */
+  --success: #2e7d32;
+  --warning: #ecc246;
+  --error: #ba1a1a;
+  --error-bg: #ffdad6;
+  --error-text: #93000a;
+
+  /* Dark Surface */
+  --surface-dark: #303031;
+  --surface-dark-text: #f2f0f0;
+
+  /* Fixed Colors */
+  --primary-fixed: #ffe08e;
+  --primary-fixed-dark: #ecc246;
+  --secondary-fixed: #e5e2e1;
+  --secondary-fixed-dark: #c8c6c5;
+  --tertiary-fixed: #e2e2e2;
+  --tertiary-fixed-dark: #c6c6c7;
+
+  /* ===========================
+     TYPOGRAPHY
+  =========================== */
+
+  /* Font Family */
+  --font-heading: "Playfair Display", serif;
+  --font-body: "Inter", sans-serif;
+
+  /* Display */
+  --display-lg-size: 48px;
+  --display-lg-line: 56px;
+  --display-lg-weight: 700;
+
+  --display-mobile-size: 32px;
+  --display-mobile-line: 40px;
+
+  /* Headings */
+  --heading-size: 32px;
+  --heading-line: 40px;
+  --heading-weight: 600;
+
+  --heading-mobile-size: 24px;
+  --heading-mobile-line: 32px;
+
+  /* Title */
+  --title-size: 18px;
+  --title-line: 24px;
+  --title-weight: 600;
+
+  /* Body */
+  --body-lg-size: 16px;
+  --body-lg-line: 26px;
+
+  --body-md-size: 14px;
+  --body-md-line: 22px;
+
+  /* Labels */
+  --label-size: 12px;
+  --label-line: 16px;
+  --label-weight: 600;
+  --label-spacing: 0.1em;
+
+  /* ===========================
+     BORDER RADIUS
+  =========================== */
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ===========================
+     SPACING
+  =========================== */
+
+  --space-unit: 8px;
+
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 32px;
+  --space-xl: 48px;
+  --space-2xl: 64px;
+
+  /* Layout */
+  --container-width: 1280px;
+  --container-padding-mobile: 16px;
+  --container-padding-desktop: 64px;
+  --container-gutter: 24px;
+
+  /* ===========================
+     SHADOWS
+  =========================== */
+
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.16);
+
+  /* ===========================
+     TRANSITIONS
+  =========================== */
+
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-primary);
+}
