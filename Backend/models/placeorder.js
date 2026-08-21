@@ -73,11 +73,20 @@ const orderSchema = new mongoose.Schema({
         default: "pending",
     },
 
-    // ---- Delhivery / shipping ----
+    // ---- Shipmozo / shipping ----
     courierPartner: { type: String, default: "Delhivery" },
     waybill: { type: String },
     trackingUrl: { type: String },
+
+    // Package details — required by Shipmozo's push-order API
     packageWeightGrams: { type: Number, default: 500 },
+    packageLengthCm: { type: Number, default: 10 },
+    packageWidthCm: { type: Number, default: 10 },
+    packageHeightCm: { type: Number, default: 10 },
+
+    // Tracks whether push-order to Shipmozo succeeded, and their reference
+    shipmozoPushed: { type: Boolean, default: false },
+    shipmozoReferenceId: { type: String },
 
     orderStatus: {
         type: String,

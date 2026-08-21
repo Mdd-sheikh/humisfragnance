@@ -563,7 +563,7 @@ function PaymentPage({ checkoutData, onBack }) {
 
       const { data } = await axios.post(
         `${API_URL}/order/placeorder`,
-        { items: buildItems(), addressId: checkoutData.addressId },
+        { items: buildItems(), addressId: checkoutData.addressId, paymentMode: "COD" }, // fixed — was missing paymentMode, so backend always defaulted to Prepaid
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -587,91 +587,216 @@ function PaymentPage({ checkoutData, onBack }) {
   // ---------------- UPI / Card via Razorpay ----------------
   const handleOnlinePayment = async () => {
     setPlacing(true);
+
     try {
       const token = localStorage.getItem("token");
 
+      if (!token) {
+        toast.error("Please login first");
+        navigate("/login");
+        return;
+      }
+
+      if (!checkoutData?.addressId) {
+        toast.error("Shipping address is missing");
+        navigate("/cart");
+        return;
+      }
+
+      // 1. Create order on backend
       const { data } = await axios.post(
         `${API_URL}/order/placeorder`,
-        { items: buildItems(), addressId: checkoutData.addressId },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          items: buildItems(),
+          addressId: checkoutData.addressId,
+          paymentMode: "Prepaid",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
+      // 2. Check backend response
       if (!data.success) {
         toast.error(data.message || "Could not start payment");
-        navigate("/cart");
         return;
       }
 
       const { order, orderId, key } = data;
 
+      // Safety checks
+      if (!order?.id) {
+        console.error("Razorpay order missing:", data);
+        toast.error("Razorpay order was not created");
+        return;
+      }
+
+      if (!key) {
+        console.error("Razorpay key missing:", data);
+        toast.error("Razorpay configuration error");
+        return;
+      }
+
+      // 3. Check Razorpay SDK
+      if (!window.Razorpay) {
+        toast.error("Razorpay is not loaded. Please refresh and try again.");
+        return;
+      }
+
+      console.log("Razorpay Order:", order);
+      console.log("Backend Order ID:", orderId);
+      console.log("Razorpay Key:", key);
+
+      // 4. Razorpay Checkout options
       const options = {
-        key,
+        key: key,
+
         amount: order.amount,
-        currency: order.currency,
+
+        currency: order.currency || "INR",
+
         name: "Humi's Attars",
+
         description: "Order Payment",
+
         order_id: order.id,
 
-        // restrict the modal to just the method the user picked on this page
-        method: {
-          netbanking: false,
-          wallet: false,
-          card: paymentMethod === "card",
-          upi: paymentMethod === "upi",
-        },
+        // IMPORTANT:
+        // Do NOT restrict payment methods here.
+        // Razorpay will handle UPI / QR / Card / other available methods.
 
         handler: async (response) => {
+          console.log("Razorpay success response:", response);
+
           try {
+            // 5. Verify payment on your backend
             const verifyRes = await axios.post(
               `${API_URL}/order/verifypayment`,
               {
-                orderId,
+                orderId: orderId,
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
               },
-              { headers: { Authorization: `Bearer ${token}` } }
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
             );
+
+            console.log("Payment verification response:", verifyRes.data);
 
             if (verifyRes.data.success) {
               toast.success("Payment successful!");
+
+              // Clear cart
               setCart({});
+
+              // Go to order confirmation
               navigate(`/order-confirmation/${orderId}`);
             } else {
-              toast.error("Payment verification failed");
-              navigate("/cart");
+              toast.error(
+                verifyRes.data.message || "Payment verification failed"
+              );
             }
           } catch (err) {
-            toast.error(err.response?.data?.message || "Payment verification failed");
-            navigate("/cart");
-          }
-        },
+            console.error(
+              "PAYMENT VERIFICATION ERROR:",
+              err.response?.data || err
+            );
 
-        modal: {
-          ondismiss: () => {
-            toast.error("Payment cancelled");
-            navigate("/cart");
-          },
+            toast.error(
+              err.response?.data?.message ||
+              "Payment verification failed"
+            );
+          }
         },
 
         prefill: {
           name: checkoutData?.address?.fullName || "",
           contact: checkoutData?.address?.phone || "",
         },
-        theme: { color: "#c9a227" },
+
+        theme: {
+          color: "#c9a227",
+        },
+
+        modal: {
+          ondismiss: () => {
+            console.log("Razorpay checkout closed");
+
+            setPlacing(false);
+
+            toast.info("Payment cancelled");
+          },
+        },
       };
 
+      // 6. Create Razorpay instance
       const rzp = new window.Razorpay(options);
 
-      rzp.on("payment.failed", () => {
-        toast.error("Payment failed. Please try again.");
-        navigate("/cart");
+      // 7. VERY IMPORTANT:
+      // Show the real Razorpay error instead of generic "Payment failed"
+      rzp.on("payment.failed", (response) => {
+        console.error(
+          "================ RAZORPAY PAYMENT FAILED ================"
+        );
+
+        console.error("Full error:", response.error);
+
+        console.error("Code:", response.error?.code);
+
+        console.error(
+          "Description:",
+          response.error?.description
+        );
+
+        console.error(
+          "Source:",
+          response.error?.source
+        );
+
+        console.error(
+          "Step:",
+          response.error?.step
+        );
+
+        console.error(
+          "Reason:",
+          response.error?.reason
+        );
+
+        console.error(
+          "Metadata:",
+          response.error?.metadata
+        );
+
+        console.error(
+          "=========================================================="
+        );
+
+        toast.error(
+          response.error?.description ||
+          "Payment failed. Please try again."
+        );
       });
 
+      // 8. OPEN RAZORPAY
       rzp.open();
+
     } catch (err) {
-      toast.error(err.response?.data?.message || "Something went wrong");
-      navigate("/cart");
+      console.error(
+        "CREATE RAZORPAY ORDER ERROR:",
+        err.response?.data || err
+      );
+
+      toast.error(
+        err.response?.data?.message ||
+        "Unable to start payment. Please try again."
+      );
     } finally {
       setPlacing(false);
     }
