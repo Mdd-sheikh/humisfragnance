@@ -799,7 +799,7 @@ function PaymentPage({ checkoutData, onBack }) {
       );
     } finally {
       setPlacing(false);
-    }
+    } 
   };
 
   const handlePlaceOrder = () => {

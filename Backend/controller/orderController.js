@@ -3,7 +3,8 @@ import razorpay from "../config/razorpay.js";
 import Product from "../models/attarModel.js";
 import Address from "../models/addressModel.js"
 import Order from "../models/placeorder.js";
-import { pushOrder, autoAssignOrder, trackOrder } from "../services/shipmozoService.js";
+
+import { pushOrder,trackOrder,autoAssignOrder } from "../services/Shipmozoservice.js";
 import {mapShipmozoStatus} from "../utils/trackingStatusMap.js";
 
 // ---------------- Shared: decrement stock + push to Shipmozo ----------------
