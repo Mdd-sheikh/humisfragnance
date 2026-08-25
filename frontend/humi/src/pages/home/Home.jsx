@@ -13,8 +13,8 @@ const Home = () => {
       <div className="hero-sec">
         <Hero/>
       </div>
-      <div className="shopbyuse-section">
-        <Shopbyuse/>
+      <div className="text">
+        <h1>Top Fragrances</h1>
       </div>
       <div className="products-display">
         <Productgrid/>
