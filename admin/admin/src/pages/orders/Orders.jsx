@@ -98,7 +98,7 @@ const Orders = () => {
     setError(null);
     try {
 
-      const res = await axios.get(`${API_URL}/order/getAllOrders`);
+      const res = await axios.get(`${API_URL}/api/order/getAllOrders`);
 
       const data = res.data;
       // Support either { orders: [...] } or a raw array response
