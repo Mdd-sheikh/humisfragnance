@@ -275,24 +275,7 @@ export default function ContactPage() {
                 <span className="rp-detail-arrow">→</span>
               </a>
 
-              <div className="rp-detail-row rp-detail-static">
-                <span className="rp-detail-icon">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z" />
-                    <circle cx="12" cy="9.5" r="2.3" />
-                  </svg>
-                </span>
-                <span className="rp-detail-copy">
-                  <span className="rp-label">Address</span>
-                  <span className="rp-value">
-                    Patwar bagan lane 
-                    <br />
-                    rajabazar, amherst street, kolkata,india
-                    <br />
-                    Pincode: 700009
-                  </span>
-                </span>
-              </div>
+             
             </div>
 
             <div className="rp-note-strip">
