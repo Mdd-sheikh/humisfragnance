@@ -189,10 +189,9 @@ export default function ContactPage() {
                       onChange={handleChange}
                     >
                       <option>General Inquiry</option>
-                      <option>Order Support</option>
-                      <option>Custom Blend</option>
-                      <option>Partnership</option>
-                      <option>Other</option>
+                      <option>Refund</option>
+                      <option>Complaint</option>
+                      <option>Others</option>
                     </select>
                   </div>
                 </div>

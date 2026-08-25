@@ -13,6 +13,29 @@
     flex-direction: column;
     gap: 3rem;
 }
+.footer__brand img{
+   width: 150px;
+   height: auto;
+}
+
+.footer__tagline {
+    margin-top: .8rem;
+    font-family: var(--font-body);
+    font-size: var(--body-md-size);
+    font-weight: 200;
+    color:black;
+}
+
+.footer__subtext {
+    display: block;
+    margin-top: .2rem;
+    font-family: var(--font-body);
+    font-size: 12px;
+    letter-spacing: .08em;
+    color: black;
+}
+
+
 
 /* ===========================
    BRAND

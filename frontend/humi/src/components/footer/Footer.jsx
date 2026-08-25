@@ -1,9 +1,9 @@
 import "./Footer.css";
 import {
-    FiPhone,
-    FiSearch,
-    FiShare2,
-} from "react-icons/fi";
+    FaInstagram,
+    FaFacebookF,
+    FaWhatsapp,
+} from "react-icons/fa";
 import { Assets } from "../../assets/Assests";
 
 function Footer() {
@@ -14,11 +14,14 @@ function Footer() {
             <div className="footer__container">
 
                 <div className="footer__brand">
-                        <img src={Assets.logo} alt="Humi's Logo" />
-                    
-                  
-                
+                    <img src={Assets.logo} alt="Humi's Logo" />
+
+                    <p className="footer__tagline">Humi's Parfums is a fragrance brand that offers a wide range of high-quality perfumes.</p>
+                    <span className="footer__subtext">Since 2025</span>
+
+                   
                 </div>
+
 
                 <div className="footer__links">
 
@@ -45,15 +48,15 @@ function Footer() {
 
                         <div className="footer__socials">
                             <a href="/">
-                                <FiPhone />
+                                <FaInstagram />
                             </a>
 
                             <a href="/">
-                                <FiSearch />
+                                <FaFacebookF />
                             </a>
 
                             <a href="/">
-                                <FiShare2 />
+                                <FaWhatsapp />
                             </a>
                         </div>
                     </div>
