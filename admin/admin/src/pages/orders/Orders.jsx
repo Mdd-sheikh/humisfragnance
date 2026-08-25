@@ -8,48 +8,24 @@ import {
   Package,
 } from "lucide-react";
 import "./Orders.css";
+import { useContext } from "react";
+import { Context } from "../../context/Context";
 
 const TABS = [
   { key: "all", label: "All Orders" },
-  { key: "pending", label: "Pending" },
+  { key: "placed", label: "Pending" },
   { key: "shipped", label: "Shipped" },
-  { key: "completed", label: "Completed" },
+  { key: "delivered", label: "Completed" },
 ];
 
-/**
- * Expects a backend endpoint returning JSON shaped like:
- * {
- *   stats: { pending: 12, shipped: 48 },
- *   orders: [
- *     {
- *       id: "HE-1024",
- *       customer: "Aurelius Thorne",
- *       date: "2023-10-24",
- *       status: "pending" | "shipped" | "completed",
- *       price: 284.00,
- *       itemCount: 2,
- *       review: "Beautifully packaged, the scent profile is exactly as described.", // completed orders only
- *       items: [
- *         { id, name: "Amber Noir", variant: "50ML • Eau de Parfum", price: 180.0 },
- *         { id, name: "Midnight Santal", variant: "220G • Soy Wax", price: 65.0 }
- *       ],
- *       subtotal: 245.0,
- *       tax: 19.6,
- *       shipping: 19.4,
- *       total: 284.0,
- *       highValueNote: "High-value order detected. Ensure discrete luxury packaging and signature confirmation." // optional
- *     }
- *   ]
- * }
- *
- * Adjust API_URL and field names below to match your API.
- */
-const API_URL = "/api/orders";
+// Adjust to match your real backend route
+
+const {API_URL} = useContext(Context)
 
 const STATUS_META = {
-  pending: { label: "Pending", icon: Clock, badgeClass: "badge--pending" },
+  placed: { label: "Pending", icon: Clock, badgeClass: "badge--pending" },
   shipped: { label: "Shipped", icon: Truck, badgeClass: "badge--shipped" },
-  completed: {
+  delivered: {
     label: "Completed",
     icon: CheckCircle2,
     badgeClass: "badge--completed",
@@ -68,6 +44,41 @@ const formatDate = (dateStr) => {
 
 const formatMoney = (value) => `$${Number(value ?? 0).toFixed(2)}`;
 
+/**
+ * Normalizes a raw order document from MongoDB into the shape
+ * the Orders UI expects.
+ */
+const normalizeOrder = (order) => {
+  const items = (order.items ?? []).map((item, idx) => ({
+    id: item.product ?? idx,
+    name: item.name,
+    image: item.image,
+    variant: `Qty: ${item.quantity}`,
+    price: item.price,
+  }));
+
+  return {
+    id: order._id,
+    customer: order.shippingAddress?.fullName ?? "Unknown",
+    date: order.createdAt,
+    status: order.orderStatus, // "placed" | "shipped" | "delivered" ...
+    price: order.totalAmount,
+    itemCount: items.length,
+    items,
+    subtotal: order.itemsTotal,
+    tax: 0,
+    shipping: order.shippingFee,
+    total: order.totalAmount,
+    paymentMode: order.paymentMode,
+    paymentStatus: order.paymentStatus,
+    courierPartner: order.courierPartner,
+    highValueNote:
+      order.totalAmount > 5000
+        ? "High-value order detected. Ensure discrete luxury packaging and signature confirmation."
+        : null,
+  };
+};
+
 const Orders = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [orders, setOrders] = useState([]);
@@ -76,27 +87,34 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchOrders = useCallback(async () => {
+  // Fetches all orders from the backend and normalizes them
+ const getAllOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      if (activeTab !== "all") params.set("status", activeTab);
 
-      const res = await fetch(`${API_URL}?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to load orders");
+      const res = await axios.get(`${API_URL}/order/getAllOrders`);
 
-      const data = await res.json();
-      const fetchedOrders = data.orders ?? [];
-      setOrders(fetchedOrders);
-      setStats(data.stats ?? { pending: 0, shipped: 0 });
+      const data = res.data;
+      // Support either { orders: [...] } or a raw array response
+      const rawOrders = Array.isArray(data) ? data : data.orders ?? [];
+      const normalized = rawOrders.map(normalizeOrder);
+
+      const filtered =
+        activeTab === "all"
+          ? normalized
+          : normalized.filter((o) => o.status === activeTab);
+
+      setOrders(filtered);
+      setStats({
+        pending: normalized.filter((o) => o.status === "placed").length,
+        shipped: normalized.filter((o) => o.status === "shipped").length,
+      });
       setSelectedOrderId((prev) =>
-        fetchedOrders.some((o) => o.id === prev)
-          ? prev
-          : fetchedOrders[0]?.id ?? null
+        filtered.some((o) => o.id === prev) ? prev : filtered[0]?.id ?? null
       );
     } catch (err) {
-      setError(err.message || "Something went wrong");
+      setError(err.response?.data?.message || err.message || "Something went wrong");
       setOrders([]);
     } finally {
       setLoading(false);
@@ -104,8 +122,8 @@ const Orders = () => {
   }, [activeTab]);
 
   useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+    getAllOrders();
+  }, [getAllOrders]);
 
   const selectedOrder = orders.find((o) => o.id === selectedOrderId) || null;
 
@@ -162,9 +180,9 @@ const Orders = () => {
           {!loading &&
             !error &&
             orders.map((order) => {
-              const meta = STATUS_META[order.status] ?? STATUS_META.pending;
+              const meta = STATUS_META[order.status] ?? STATUS_META.placed;
               const StatusIcon = meta.icon;
-              const isCompleted = order.status === "completed";
+              const isCompleted = order.status === "delivered";
 
               return (
                 <div className="order-card" key={order.id}>
@@ -193,20 +211,21 @@ const Orders = () => {
 
                   <div className="order-card__divider" />
 
-                  {isCompleted && order.review ? (
-                    <p className="order-card__review">"{order.review}"</p>
-                  ) : (
-                    <div className="order-card__items">
-                      <span className="order-card__item-placeholder">
-                        <Package size={18} />
+                  <div className="order-card__items">
+                    {order.items.slice(0, 1).map((item) => (
+                      <img
+                        key={item.id}
+                        src={item.image}
+                        alt={item.name}
+                        className="order-card__item-thumb"
+                      />
+                    ))}
+                    {order.itemCount > 1 && (
+                      <span className="order-card__item-more">
+                        +{order.itemCount - 1}
                       </span>
-                      {order.itemCount > 1 && (
-                        <span className="order-card__item-more">
-                          +{order.itemCount - 1}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                   <div className="order-card__actions">
                     <button
@@ -240,11 +259,19 @@ const Orders = () => {
           {selectedOrder && (
             <>
               <div className="order-summary__items">
-                {(selectedOrder.items ?? []).map((item) => (
+                {selectedOrder.items.map((item) => (
                   <div className="summary-item" key={item.id}>
-                    <span className="summary-item__placeholder">
-                      <Package size={16} />
-                    </span>
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="summary-item__thumb"
+                      />
+                    ) : (
+                      <span className="summary-item__placeholder">
+                        <Package size={16} />
+                      </span>
+                    )}
                     <div className="summary-item__info">
                       <p className="summary-item__name">{item.name}</p>
                       <p className="summary-item__variant">{item.variant}</p>
@@ -262,11 +289,7 @@ const Orders = () => {
                   <span>{formatMoney(selectedOrder.subtotal)}</span>
                 </div>
                 <div className="summary-row">
-                  <span>Tax (Est.)</span>
-                  <span>{formatMoney(selectedOrder.tax)}</span>
-                </div>
-                <div className="summary-row">
-                  <span>Express Shipping</span>
+                  <span>Shipping</span>
                   <span>{formatMoney(selectedOrder.shipping)}</span>
                 </div>
                 <div className="summary-row summary-row--total">

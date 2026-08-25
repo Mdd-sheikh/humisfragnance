@@ -66,7 +66,7 @@ function Footer() {
             </div>
 
             <div className="footer__bottom">
-                <p>© {year} Humi's PARFUMS. ALL RIGHTS RESERVED.</p>
+                <p>© {year} Humi's PARFUMS. ALL RIGHTS RESERVED.</p> 
 
                 <div className="footer__legal">
                     <a href="/">Privacy</a>

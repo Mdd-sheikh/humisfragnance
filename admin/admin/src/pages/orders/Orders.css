@@ -457,6 +457,24 @@
     color: var(--color-primary-dark);
 }
 
+.order-card__item-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--bg-muted);
+    flex-shrink: 0;
+}
+
+.summary-item__thumb {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--bg-muted);
+    flex-shrink: 0;
+}
+
 .system-note svg {
     flex-shrink: 0;
     margin-top: 0.15rem;
