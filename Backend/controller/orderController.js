@@ -345,9 +345,6 @@ export const getUserOrders = async (req, res) => {
 export const getAllOrders = async (req, res) => {
     try {
         const orders = await Order.find({})
-            .populate("user", "name email")
-            .populate("items.product", "name images")
-            .sort({ createdAt: -1 });
 
         res.status(200).json({ success: true, orders });
     } catch (err) {

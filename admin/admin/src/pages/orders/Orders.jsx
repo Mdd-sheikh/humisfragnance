@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback ,useContext} from "react";
 import axios from "axios";
 import {
   Clock,
@@ -9,7 +9,7 @@ import {
   Package,
 } from "lucide-react";
 import "./Orders.css";
-import { useContext } from "react";
+
 import { Context } from "../../context/Context";
 
 const TABS = [
@@ -21,7 +21,8 @@ const TABS = [
 
 // Adjust to match your real backend route
 
-const {API_URL} = useContext(Context)
+
+
 
 const STATUS_META = {
   placed: { label: "Pending", icon: Clock, badgeClass: "badge--pending" },
@@ -87,6 +88,9 @@ const Orders = () => {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { API_URL } = useContext(Context);
+  console.log(API_URL);
+  
 
   // Fetches all orders from the backend and normalizes them
  const getAllOrders = useCallback(async () => {
