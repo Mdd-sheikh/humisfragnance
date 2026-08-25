@@ -342,11 +342,40 @@ export const getUserOrders = async (req, res) => {
 };
 
 // ---------------- Get all orders (admin) ----------------
+// ---------------- Get all orders (admin) ----------------
 export const getAllOrders = async (req, res) => {
     try {
-        const orders = await Order.find({})
+        // Admin-only — requires an isAdmin/role check to have run in middleware
+        // and attached to req.user (see note below)
 
-        res.status(200).json({ success: true, orders });
+        const { status, page = 1, limit = 20 } = req.query;
+
+        const filter = {};
+        if (status && status !== "all") {
+            filter.orderStatus = status;
+        }
+
+        const pageNum = Math.max(1, Number(page) || 1);
+        const limitNum = Math.min(100, Math.max(1, Number(limit) || 20));
+
+        const [orders, total] = await Promise.all([
+            Order.find(filter)
+                .sort({ createdAt: -1 })
+                .skip((pageNum - 1) * limitNum)
+                .limit(limitNum),
+            Order.countDocuments(filter),
+        ]);
+
+        res.status(200).json({
+            success: true,
+            orders,
+            pagination: {
+                total,
+                page: pageNum,
+                limit: limitNum,
+                totalPages: Math.ceil(total / limitNum),
+            },
+        });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

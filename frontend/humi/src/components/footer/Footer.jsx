@@ -16,7 +16,7 @@ function Footer() {
                 <div className="footer__brand">
                     <img src={Assets.logo} alt="Humi's Logo" />
 
-                    <p className="footer__tagline">Humi's Parfums is a fragrance brand that offers a wide range of high-quality perfumes.</p>
+                    <p className="footer__tagline">Crafted to capture the essence of pure elegance, Humi's fragrance delivers a captivating, long-lasting scent designed to leave a memorable impression.</p>
                     <span className="footer__subtext">Since 2025</span>
 
                    
