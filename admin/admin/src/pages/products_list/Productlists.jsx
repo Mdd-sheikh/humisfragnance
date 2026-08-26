@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import {
     Search,
     SlidersHorizontal,
@@ -10,17 +11,33 @@ import {
     Plus,
 } from "lucide-react";
 import "./Productlists.css";
+import { Context } from "../../context/Context";
 
 const FILTERS = ["All Items", "Attar", "EDP", "Sets"];
 const ITEMS_PER_PAGE = 10;
 const LOW_STOCK_THRESHOLD = 5;
 
-
-const API_URL = "/api/products";
+/**
+ * Normalizes a raw product document from the backend
+ * (attarModel) into the shape the table UI expects.
+ */
+const normalizeProduct = (product) => ({
+    id: product._id,
+    name: product.name,
+    slug: product.slug,
+    image: product.images?.[0]?.url ?? "",
+    category: product.category,
+    stock: product.stock ?? 0,
+    price: product.price,
+    discountPrice: product.discountPrice,
+    isActive: product.isActive,
+});
 
 const mapResponse = (data) => ({
-    items: data.items ?? [],
+    items: (data.products ?? []).map(normalizeProduct),
     total: data.total ?? 0,
+    totalPages: data.totalPages ?? 1,
+    stats: data.stats ?? { active: 0, inactive: 0, outOfStock: 0 },
 });
 
 const Productlists = () => {
@@ -33,40 +50,42 @@ const Productlists = () => {
     const [activeFilter, setActiveFilter] = useState("All Items");
     const [currentPage, setCurrentPage] = useState(1);
 
-    const fetchProducts = useCallback(async () => {
+    const { API_URL } = useContext(Context);
+    
+    
+
+    // Fetches ALL products (admin view — active + inactive) using axios
+    const getAllAttars = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            const params = new URLSearchParams({
-                page: currentPage,
-                limit: ITEMS_PER_PAGE,
-            });
-            if (searchTerm.trim()) params.set("search", searchTerm.trim());
-            if (activeFilter !== "All Items") params.set("category", activeFilter);
+            
+            if (searchTerm.trim()) params.search = searchTerm.trim();
+            if (activeFilter !== "All Items") params.category = activeFilter;
 
-            const res = await fetch(`${API_URL}?${params.toString()}`);
-            if (!res.ok) throw new Error("Failed to load products");
+            const res = await axios.get(`${API_URL}/api/product/getallattar`);
 
-            const data = await res.json();
-            const { items, total } = mapResponse(data);
+            const { items, total } = mapResponse(res.data);
             setProducts(items);
             setTotalItems(total);
         } catch (err) {
-            setError(err.message || "Something went wrong");
+            setError(
+                err.response?.data?.message || err.message || "Something went wrong"
+            );
             setProducts([]);
             setTotalItems(0);
         } finally {
             setLoading(false);
         }
-    }, [searchTerm, activeFilter, currentPage]);
+    }, [API_URL, searchTerm, activeFilter, currentPage]);
 
     // Debounce search so we don't fire a request on every keystroke
     useEffect(() => {
         const handle = setTimeout(() => {
-            fetchProducts();
+            getAllAttars();
         }, 350);
         return () => clearTimeout(handle);
-    }, [fetchProducts]);
+    }, [getAllAttars]);
 
     // Reset to page 1 whenever the search term or filter changes
     useEffect(() => {
