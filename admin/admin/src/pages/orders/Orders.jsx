@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback ,useContext} from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import axios from "axios";
 import {
   Clock,
@@ -7,6 +7,8 @@ import {
   Info,
   AlertTriangle,
   Package,
+  X,
+  MapPin,
 } from "lucide-react";
 import "./Orders.css";
 
@@ -20,9 +22,6 @@ const TABS = [
 ];
 
 // Adjust to match your real backend route
-
-
-
 
 const STATUS_META = {
   placed: { label: "Pending", icon: Clock, badgeClass: "badge--pending" },
@@ -56,6 +55,7 @@ const normalizeOrder = (order) => {
     name: item.name,
     image: item.image,
     variant: `Qty: ${item.quantity}`,
+    quantity: item.quantity,
     price: item.price,
   }));
 
@@ -74,11 +74,151 @@ const normalizeOrder = (order) => {
     paymentMode: order.paymentMode,
     paymentStatus: order.paymentStatus,
     courierPartner: order.courierPartner,
+    // Full shipping / address details for the popup
+    shippingAddress: {
+      fullName: order.shippingAddress?.fullName ?? "—",
+      phone: order.shippingAddress?.phone ?? "—",
+      address: order.shippingAddress?.address ?? "—",
+      city: order.shippingAddress?.city ?? "",
+      state: order.shippingAddress?.state ?? "",
+      pincode: order.shippingAddress?.pincode ?? "",
+      country: order.shippingAddress?.country ?? "",
+    },
     highValueNote:
       order.totalAmount > 5000
         ? "High-value order detected. Ensure discrete luxury packaging and signature confirmation."
         : null,
   };
+};
+
+/**
+ * Popup modal that shows full order + product details,
+ * including images and the shipping address.
+ */
+const OrderDetailsModal = ({ order, onClose }) => {
+  if (!order) return null;
+
+  const meta = STATUS_META[order.status] ?? STATUS_META.placed;
+  const StatusIcon = meta.icon;
+  const addr = order.shippingAddress;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <div className="modal-header__title">
+            <span className={`order-card__icon ${meta.badgeClass}`}>
+              <StatusIcon size={16} />
+            </span>
+            <div>
+              <h2>Order #{order.id}</h2>
+              <span className={`badge ${meta.badgeClass}`}>{meta.label}</span>
+            </div>
+          </div>
+          <button className="modal-close" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="modal-body">
+          {/* Products */}
+          <div className="modal-section">
+            <h3>Products ({order.itemCount})</h3>
+            <div className="modal-products">
+              {order.items.map((item) => (
+                <div className="modal-product" key={item.id}>
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="modal-product__img"
+                    />
+                  ) : (
+                    <span className="summary-item__placeholder">
+                      <Package size={20} />
+                    </span>
+                  )}
+                  <div className="modal-product__info">
+                    <p className="modal-product__name">{item.name}</p>
+                    <p className="modal-product__variant">{item.variant}</p>
+                  </div>
+                  <span className="modal-product__price">
+                    {formatMoney(item.price)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Shipping address */}
+          <div className="modal-section">
+            <h3>
+              <MapPin size={15} style={{ marginRight: 6 }} />
+              Shipping Address
+            </h3>
+            <div className="modal-address">
+              <p className="modal-address__name">{addr.fullName}</p>
+              <p>{addr.phone}</p>
+              <p>{addr.address}</p>
+              <p>
+                {[addr.city, addr.state, addr.pincode]
+                  .filter(Boolean)
+                  .join(", ")}
+              </p>
+              {addr.country && <p>{addr.country}</p>}
+            </div>
+          </div>
+
+          {/* Order info */}
+          <div className="modal-section">
+            <h3>Order Info</h3>
+            <div className="summary-row">
+              <span>Order Date</span>
+              <span>{formatDate(order.date)}</span>
+            </div>
+            <div className="summary-row">
+              <span>Payment Mode</span>
+              <span>{order.paymentMode ?? "—"}</span>
+            </div>
+            <div className="summary-row">
+              <span>Payment Status</span>
+              <span>{order.paymentStatus ?? "—"}</span>
+            </div>
+            <div className="summary-row">
+              <span>Courier Partner</span>
+              <span>{order.courierPartner ?? "—"}</span>
+            </div>
+          </div>
+
+          {/* Totals */}
+          <div className="modal-section">
+            <h3>Payment Summary</h3>
+            <div className="summary-row">
+              <span>Subtotal</span>
+              <span>{formatMoney(order.subtotal)}</span>
+            </div>
+            <div className="summary-row">
+              <span>Shipping</span>
+              <span>{formatMoney(order.shipping)}</span>
+            </div>
+            <div className="summary-row summary-row--total">
+              <span>Total</span>
+              <span>{formatMoney(order.total)}</span>
+            </div>
+          </div>
+
+          {order.highValueNote && (
+            <div className="system-note">
+              <AlertTriangle size={15} />
+              <p>
+                <strong>System note:</strong> {order.highValueNote}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const Orders = () => {
@@ -88,16 +228,19 @@ const Orders = () => {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalOrder, setModalOrder] = useState(null);
+
   const { API_URL } = useContext(Context);
   console.log(API_URL);
-  
 
   // Fetches all orders from the backend and normalizes them
- const getAllOrders = useCallback(async () => {
+  const getAllOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-
       const res = await axios.get(`${API_URL}/api/order/getAllOrders`);
 
       const data = res.data;
@@ -131,6 +274,18 @@ const Orders = () => {
   }, [getAllOrders]);
 
   const selectedOrder = orders.find((o) => o.id === selectedOrderId) || null;
+
+  // Opens the product/order details popup
+  const openOrderModal = (order) => {
+    setSelectedOrderId(order.id);
+    setModalOrder(order);
+    setIsModalOpen(true);
+  };
+
+  const closeOrderModal = () => {
+    setIsModalOpen(false);
+    setModalOrder(null);
+  };
 
   return (
     <div className="orders">
@@ -235,7 +390,7 @@ const Orders = () => {
                   <div className="order-card__actions">
                     <button
                       className="btn-outline"
-                      onClick={() => setSelectedOrderId(order.id)}
+                      onClick={() => openOrderModal(order)}
                     >
                       View Details
                     </button>
@@ -317,6 +472,11 @@ const Orders = () => {
           )}
         </aside>
       </div>
+
+      {/* Product details popup */}
+      {isModalOpen && (
+        <OrderDetailsModal order={modalOrder} onClose={closeOrderModal} />
+      )}
     </div>
   );
 };
