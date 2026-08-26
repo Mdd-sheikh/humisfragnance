@@ -205,3 +205,69 @@ export const deleteAttarproduct = async (req, res) => {
         return res.status(500).json({ message: "Failed to delete product" });
     }
 };
+
+
+
+
+
+// ---------------- GET ALL (ADMIN) ----------------
+// Returns every product regardless of isActive status,
+// with extra filters/sorting useful for the admin dashboard.
+export const getAllAttarproduct = async (req, res) => {
+    try {
+        const {
+            category,
+            search,
+            status,       // "active" | "inactive" | undefined (= all)
+            stock,        // "in" | "out" | undefined (= all)
+            page = 1,
+            limit = 20,
+            sortBy = "createdAt",
+            sortOrder = "desc",
+        } = req.query;
+
+        const filter = {};
+
+        if (category) filter.category = category;
+        if (search) filter.$text = { $search: search };
+
+        // Admin can filter by active/inactive, or omit to see all
+        if (status === "active") filter.isActive = true;
+        if (status === "inactive") filter.isActive = false;
+
+        // Admin can filter by stock availability
+        if (stock === "in") filter.stock = { $gt: 0 };
+        if (stock === "out") filter.stock = { $lte: 0 };
+
+        const sort = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
+
+        const products = await Product.find(filter)
+            .sort(sort)
+            .skip((page - 1) * limit)
+            .limit(Number(limit));
+
+        const total = await Product.countDocuments(filter);
+
+        // Quick summary stats for the admin dashboard
+        const [activeCount, inactiveCount, outOfStockCount] = await Promise.all([
+            Product.countDocuments({ isActive: true }),
+            Product.countDocuments({ isActive: false }),
+            Product.countDocuments({ stock: { $lte: 0 } }),
+        ]);
+
+        return res.status(200).json({
+            products,
+            total,
+            page: Number(page),
+            totalPages: Math.ceil(total / limit),
+            stats: {
+                active: activeCount,
+                inactive: inactiveCount,
+                outOfStock: outOfStockCount,
+            },
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Failed to fetch products", success: false });
+    }
+};

@@ -3,7 +3,7 @@ import { upload,createAttarproduct,
     getAttarproduct,
     getSingleAttarproduct,
     updateAttarproduct,
-    deleteAttarproduct, } from "../controller/attarController.js";
+    deleteAttarproduct,getAllAttarproduct } from "../controller/attarController.js";
     import Auth from "../middleware/Auth.js";
 
 
@@ -14,5 +14,6 @@ Attarrouter.get("/get", getAttarproduct);
 Attarrouter.get("/:id", getSingleAttarproduct);
 Attarrouter.put("/:id",Auth, upload.array("images", 5), updateAttarproduct);
 Attarrouter.delete("/:id",Auth, deleteAttarproduct);
+Attarrouter.get("/getallatter", getAllAttarproduct);
 
 export default Attarrouter;
