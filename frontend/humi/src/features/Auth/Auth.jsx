@@ -25,6 +25,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
 
     const [errors, setErrors] = useState({});
     const [shake, setShake] = useState(false);
+    const [formError, setFormError] = useState("");
 
     const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
@@ -91,12 +92,16 @@ export default function Auth({ onClose, setIsAuthOpen }) {
             }
         } catch (error) {
             console.error("Error submitting form:", error);
-            toast.error(error.response?.data?.message || "Something went wrong");
+            const message = error.response?.data?.message || "Something went wrong";
+            setFormError(message);      // NEW: show inline in form
+            triggerShake();              // NEW: reuse your existing shake animation
+            toast.error(message);        // optional: keep if you still want the toast too
         } finally {
-            setLoading(false); // re-enable inputs, whether success or failure
+            setLoading(false);
         }
     };
 
+    /*
     const switchMode = (nextMode) => {
         if (loading) return;
         setMode(nextMode);
@@ -111,7 +116,8 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                 return copy;
             });
         }
-    };
+    };*/
+
 
     return (
         <div className="elixir-overlay">
@@ -137,6 +143,11 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                 </h1>
 
                 <form className="elixir-form" onSubmit={submitHandler} noValidate>
+                    {formError && (
+                        <div className="elixir-form-error" role="alert">
+                            {formError}
+                        </div>
+                    )}
                     {mode === "signup" && (
                         <div className="elixir-field">
                             <label htmlFor="elixir-fullname" className="elixir-label">
@@ -162,7 +173,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
 
                     <div className="elixir-field">
                         <label htmlFor="elixir-email" className="elixir-label">
-                            EMAIL OR PHONE
+                            EMAIL
                         </label>
                         <input
                             id="elixir-email"

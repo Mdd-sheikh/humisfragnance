@@ -34,6 +34,17 @@
 
 }
 
+.elixir-form-error {
+    background: #fdecea;
+    border: 1px solid #f5c6cb;
+    color: #b3261e;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
 .elixir-modal {
     position: relative;
     width: 100%;
