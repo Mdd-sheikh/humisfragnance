@@ -2,16 +2,14 @@
    Place Order Confirmation — tokens
    --------------------------------------------- */
 .poc-page {
- .poc-page {
-  --poc-bg: #303031;         /* surface-dark */
-  --poc-ring-1: #3a3a3b;     /* tertiary-fixed-dark, dimmed on dark bg */
-  --poc-ring-2: #4a4a49;     /* secondary-fixed-dark, dimmed */
-  --poc-ring-3: #ecc246;     /* primary-fixed-dark */
-  --poc-ring-4: #ffe08e;     /* primary-fixed */
-  --poc-core: #ecc246;       /* primary-fixed-dark */
-  --poc-text: #f2f0f0;       /* surface-dark-text */
-  --poc-muted: #c8c6c5;      /* secondary-fixed-dark */
-}
+  --poc-bg: #ffffff;
+  --poc-ring-1: #eef1fe;
+  --poc-ring-2: #c3cdf9;
+  --poc-ring-3: #7c8cef;
+  --poc-ring-4: #3a56e4;
+  --poc-core: #2540d6;
+  --poc-text: #1a1f36;
+  --poc-muted: #6b7280;
 
   min-height: 100vh;
   width: 100%;
