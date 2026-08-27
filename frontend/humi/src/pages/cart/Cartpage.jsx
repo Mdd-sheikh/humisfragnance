@@ -29,16 +29,24 @@ export default function CartPage() {
   const [step, setStep] = useState("cart");
   const [checkoutData, setCheckoutData] = useState(null);
 
+  // NEW: promo/discount lives here so it survives cart -> address -> payment
+  const [promo, setPromo] = useState({ code: "", discount: 0 });
+
   return (
     <div className="cart-page">
       {step === "cart" && (
-        <ShoppingBag onCheckout={() => setStep("address")} />
+        <ShoppingBag
+          onCheckout={() => setStep("address")}
+          promo={promo}
+          setPromo={setPromo}
+        />
       )}
       {step === "address" && (
         <AddressStep
           onBack={() => setStep("cart")}
           onContinue={(data) => {
-            setCheckoutData(data);
+            // NEW: carry the promo forward into checkoutData
+            setCheckoutData({ ...data, promo });
             setStep("payment");
           }}
         />
@@ -60,29 +68,31 @@ export default function CartPage() {
    Step 1 — Shopping Bag
    ============================================================ */
 
-function ShoppingBag({ onCheckout }) {
+function ShoppingBag({ onCheckout, promo, setPromo }) {
   const { cartItems, cartCount, cartTotal, updateQty, removeFromCart } =
     useContext(Context);
 
-  const [promoCode, setPromoCode] = useState("");
-  const [promoStatus, setPromoStatus] = useState(null); // null | "applied" | "invalid"
-  const [discount, setDiscount] = useState(0);
+  // NEW: promoInput is just the text box; the actual applied code/discount
+  // now lives in the `promo` prop lifted up to CartPage.
+  const [promoInput, setPromoInput] = useState(promo.code || "");
+  const [promoStatus, setPromoStatus] = useState(promo.code ? "applied" : null); // null | "applied" | "invalid"
 
   const subtotal = cartTotal;
+  const discount = promo.discount; // NEW: read from lifted state
   const tax = subtotal * TAX_RATE;
   const total = Math.max(0, subtotal - discount + tax);
 
   const handleApplyPromo = (e) => {
     e.preventDefault();
-    const code = promoCode.trim().toUpperCase();
+    const code = promoInput.trim().toUpperCase();
     if (!code) return;
 
     // Mock validation — replace with a real promo-code API call.
     if (code === "SAVE10") {
-      setDiscount(subtotal * 0.1);
+      setPromo({ code, discount: subtotal * 0.1 }); // NEW: write to lifted state
       setPromoStatus("applied");
     } else {
-      setDiscount(0);
+      setPromo({ code: "", discount: 0 }); // NEW: clear lifted state on invalid code
       setPromoStatus("invalid");
     }
   };
@@ -169,9 +179,9 @@ function ShoppingBag({ onCheckout }) {
               <input
                 id="promo-code"
                 type="text"
-                value={promoCode}
+                value={promoInput}
                 onChange={(e) => {
-                  setPromoCode(e.target.value);
+                  setPromoInput(e.target.value);
                   setPromoStatus(null);
                 }}
                 placeholder="Enter code"
@@ -539,6 +549,12 @@ function PaymentPage({ checkoutData, onBack }) {
   const [placing, setPlacing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("upi"); // "cod" | "upi" | "card"
 
+  // NEW: pull the promo carried over from ShoppingBag via checkoutData
+  const discount = checkoutData?.promo?.discount || 0;
+  const promoCode = checkoutData?.promo?.code || undefined;
+  const tax = Math.max(0, cartTotal - discount) * TAX_RATE;
+  const finalTotal = Math.max(0, cartTotal - discount + tax);
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -563,7 +579,12 @@ function PaymentPage({ checkoutData, onBack }) {
 
       const { data } = await axios.post(
         `${API_URL}/order/placeorder`,
-        { items: buildItems(), addressId: checkoutData.addressId, paymentMode: "COD" }, // fixed — was missing paymentMode, so backend always defaulted to Prepaid
+        {
+          items: buildItems(),
+          addressId: checkoutData.addressId,
+          paymentMode: "COD", // fixed — was missing paymentMode, so backend always defaulted to Prepaid
+          promoCode, // NEW — backend re-validates the code and recalculates the total itself
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -610,6 +631,7 @@ function PaymentPage({ checkoutData, onBack }) {
           items: buildItems(),
           addressId: checkoutData.addressId,
           paymentMode: "Prepaid",
+          promoCode, // NEW — backend re-validates the code and computes order.amount from it
         },
         {
           headers: {
@@ -799,7 +821,7 @@ function PaymentPage({ checkoutData, onBack }) {
       );
     } finally {
       setPlacing(false);
-    } 
+    }
   };
 
   const handlePlaceOrder = () => {
@@ -875,7 +897,27 @@ function PaymentPage({ checkoutData, onBack }) {
           </div>
         </div>
 
-        <p className="confirmation__total">Order total: {formatUSD(cartTotal)}</p>
+        {/* NEW: order breakdown so the discount is visible on the payment step too */}
+        <div className="order-summary" style={{ marginTop: "16px" }}>
+          <div className="order-summary__row">
+            <span>Subtotal</span>
+            <span>{formatUSD(cartTotal)}</span>
+          </div>
+
+          {discount > 0 && (
+            <div className="order-summary__row order-summary__row--discount">
+              <span>Discount{promoCode ? ` (${promoCode})` : ""}</span>
+              <span>−{formatUSD(discount)}</span>
+            </div>
+          )}
+
+          <div className="order-summary__row">
+            <span>Tax</span>
+            <span>{formatUSD(tax)}</span>
+          </div>
+        </div>
+
+        <p className="confirmation__total">Order total: {formatUSD(finalTotal)}</p>
 
         <button
           type="button"
