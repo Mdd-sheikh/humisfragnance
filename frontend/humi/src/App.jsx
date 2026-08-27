@@ -21,6 +21,9 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import './styles/toast.css'
 import OrderPage from './pages/settings/orders/OrderPage'
+import OrderConfirmation from './pages/order-confirmation-page/OrderConfirmation'
+
+
 
 
 function App() {
@@ -42,6 +45,7 @@ function App() {
             <Route path='/orders' element={<OrderPage />} />
             <Route path='/shop' element={<Shoppage />} />
             <Route path='/product/:id' element={<ProductDetail />} />
+            <Route path='/order-confirmation/ordered' element={<OrderConfirmation/>} />
           </Route>
 
           <Route path='/contact' element={<ContactPage />} />

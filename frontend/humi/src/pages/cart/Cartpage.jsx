@@ -596,7 +596,7 @@ function PaymentPage({ checkoutData, onBack }) {
 
       toast.success("Order placed! Pay on delivery.");
       setCart({});
-      navigate(`/order-confirmation/${data.orderId}`);
+      navigate(`/order-confirmation/ordered`);
     } catch (err) {
       toast.error(err.response?.data?.message || "Something went wrong");
       navigate("/cart");
@@ -718,7 +718,7 @@ function PaymentPage({ checkoutData, onBack }) {
               setCart({});
 
               // Go to order confirmation
-              navigate(`/order-confirmation/${orderId}`);
+              navigate(`/order-confirmation/ordered`);
             } else {
               toast.error(
                 verifyRes.data.message || "Payment verification failed"

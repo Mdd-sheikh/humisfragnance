@@ -1,0 +1,246 @@
+/* ---------------------------------------------
+   Place Order Confirmation — tokens
+   --------------------------------------------- */
+.poc-page {
+ .poc-page {
+  --poc-bg: #303031;         /* surface-dark */
+  --poc-ring-1: #3a3a3b;     /* tertiary-fixed-dark, dimmed on dark bg */
+  --poc-ring-2: #4a4a49;     /* secondary-fixed-dark, dimmed */
+  --poc-ring-3: #ecc246;     /* primary-fixed-dark */
+  --poc-ring-4: #ffe08e;     /* primary-fixed */
+  --poc-core: #ecc246;       /* primary-fixed-dark */
+  --poc-text: #f2f0f0;       /* surface-dark-text */
+  --poc-muted: #c8c6c5;      /* secondary-fixed-dark */
+}
+
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: var(--poc-bg);
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  text-align: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* ---------------------------------------------
+   Concentric pulse rings (mirrors the reference
+   animation: four nested circles + a solid core)
+   --------------------------------------------- */
+.poc-rings {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.poc-ring {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--poc-ring-1);
+  animation: poc-pulse 2.2s ease-out infinite;
+}
+
+.poc-ring-1 {
+  width: 220px;
+  height: 220px;
+  background: var(--poc-ring-1);
+  animation-delay: 0s;
+}
+
+.poc-ring-2 {
+  width: 168px;
+  height: 168px;
+  background: var(--poc-ring-2);
+  animation-delay: 0.12s;
+}
+
+.poc-ring-3 {
+  width: 118px;
+  height: 118px;
+  background: var(--poc-ring-3);
+  animation-delay: 0.24s;
+}
+
+.poc-ring-4 {
+  width: 72px;
+  height: 72px;
+  background: var(--poc-ring-4);
+  animation-delay: 0.36s;
+}
+
+.poc-core {
+  position: relative;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--poc-core);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(37, 64, 214, 0.35);
+  animation: poc-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+}
+
+.poc-check {
+  width: 22px;
+  height: 22px;
+  animation: poc-draw 0.4s ease 0.7s both;
+}
+
+@keyframes poc-pulse {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes poc-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes poc-draw {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ---------------------------------------------
+   Copy
+   --------------------------------------------- */
+.poc-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--poc-text);
+}
+
+.poc-subtitle {
+  margin: 0;
+  font-size: 15px;
+  color: var(--poc-muted);
+  max-width: 320px;
+}
+
+/* ---------------------------------------------
+   Actions
+   --------------------------------------------- */
+.poc-skip {
+  margin-top: 8px;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 999px;
+  background: var(--poc-core);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.poc-skip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(37, 64, 214, 0.25);
+}
+
+.poc-skip:focus-visible {
+  outline: 2px solid var(--poc-core);
+  outline-offset: 3px;
+}
+
+.poc-timer {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--poc-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.poc-progress {
+  width: 140px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--poc-ring-1);
+  overflow: hidden;
+}
+
+.poc-progress-fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--poc-core);
+  transform-origin: left;
+  animation-name: poc-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes poc-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ---------------------------------------------
+   Reduced motion
+   --------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .poc-ring,
+  .poc-core,
+  .poc-check,
+  .poc-progress-fill {
+    animation: none !important;
+  }
+  .poc-core {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ---------------------------------------------
+   Mobile
+   --------------------------------------------- */
+@media (max-width: 420px) {
+  .poc-rings {
+    width: 180px;
+    height: 180px;
+  }
+  .poc-ring-1 { width: 180px; height: 180px; }
+  .poc-ring-2 { width: 138px; height: 138px; }
+  .poc-ring-3 { width: 98px; height: 98px; }
+  .poc-ring-4 { width: 60px; height: 60px; }
+  .poc-title { font-size: 24px; }
+}
