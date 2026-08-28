@@ -4,10 +4,11 @@ import Product from "../models/attarModel.js";
 import Address from "../models/addressModel.js"
 import Order from "../models/placeorder.js";
 
-import { pushOrder,trackOrder,autoAssignOrder } from "../services/Shipmozoservice.js";
-import {mapShipmozoStatus} from "../utils/trackingStatusMap.js";
+import { pushOrder,assignAWB, trackOrder} from "../services/shiprocketservice.js";
+import shiprocket from "../config/shiprocket.js";
+import { mapShiprocketStatus } from "../utils/trackingStatusMap.js";
 
-// ---------------- Shared: decrement stock + push to Shipmozo ----------------
+// ---------------- Shared: decrement stock + push to Shiprocket ----------------
 // Used by both the COD path (right after order creation) and verifyPayment
 // (after payment is confirmed) so this logic isn't duplicated.
 const finalizeOrder = async (order, paymentType) => {
@@ -44,58 +45,77 @@ const finalizeOrder = async (order, paymentType) => {
         await order.save();
     }
 
-    // ---------------- Push order to Shipmozo ----------------
+    // ---------------- Push order to Shiprocket ----------------
     try {
-        const shipmozoPayload = {
+        const [firstName, ...lastNameParts] = order.shippingAddress.fullName.split(" ");
+        const lastName = lastNameParts.join(" ") || firstName; // Shiprocket requires a last name
+
+        const shiprocketPayload = {
             order_id: order._id.toString(),
-            order_date: new Date(order.createdAt).toISOString().split("T")[0], // YYYY-MM-DD
-            consignee_name: order.shippingAddress.fullName,
-            consignee_phone: Number(order.shippingAddress.phone),
-            consignee_address_line_one: order.shippingAddress.addressLine1,
-            consignee_pin_code: Number(order.shippingAddress.postalCode),
-            consignee_city: order.shippingAddress.city,
-            consignee_state: order.shippingAddress.state,
-            product_detail: order.items.map((item) => ({
+            order_date: new Date(order.createdAt).toISOString().slice(0, 19).replace("T", " "), // "YYYY-MM-DD HH:mm:ss"
+            pickup_location: process.env.SHIPROCKET_PICKUP_LOCATION, // nickname configured in Shiprocket panel
+
+            billing_customer_name: firstName,
+            billing_last_name: lastName,
+            billing_address: order.shippingAddress.addressLine1,
+            billing_city: order.shippingAddress.city,
+            billing_pincode: order.shippingAddress.postalCode,
+            billing_state: order.shippingAddress.state,
+            billing_country: order.shippingAddress.country || "India",
+            // Shiprocket requires an email — shippingAddress currently has none.
+            // TODO: add an email field to your Address model, or pull it from
+            // the populated user, and swap out this fallback.
+            billing_email: order.shippingAddress.email || process.env.SHIPROCKET_FALLBACK_EMAIL,
+            billing_phone: order.shippingAddress.phone,
+            shipping_is_billing: true,
+
+            order_items: order.items.map((item) => ({
                 name: item.name,
-                sku_number: item.product.toString(),
-                quantity: item.quantity,
+                sku: item.product.toString(),
+                units: item.quantity,
+                selling_price: item.price,
                 discount: "",
+                tax: "",
                 hsn: "",
-                unit_price: item.price,
-                product_category: "Other",
             })),
-            payment_type: paymentType, // "PREPAID" or "COD"
-            cod_amount: paymentType === "COD" ? order.totalAmount : "",
-            weight: order.packageWeightGrams,
+
+            payment_method: paymentType === "COD" ? "COD" : "Prepaid",
+            sub_total: order.totalAmount,
+
             length: order.packageLengthCm,
-            width: order.packageWidthCm,
+            breadth: order.packageWidthCm,
             height: order.packageHeightCm,
-            warehouse_id: process.env.SHIPMOZO_WAREHOUSE_ID,
+            weight: order.packageWeightGrams / 1000, // Shiprocket expects kg, not grams
         };
 
-        const shipmozoRes = await pushOrder(shipmozoPayload);
+        const shiprocketRes = await pushOrder(shiprocketPayload);
 
-        if (shipmozoRes.result === "1") {
-            order.shipmozoPushed = true;
-            order.shipmozoReferenceId = shipmozoRes.data?.reference_id;
+        if (shiprocketRes.status_code === 1 && shiprocketRes.shipment_id) {
+            order.shiprocketPushed = true;
+            order.shiprocketOrderId = shiprocketRes.order_id;
+            order.shiprocketShipmentId = shiprocketRes.shipment_id;
             order.orderStatus = "shipment_created";
             await order.save();
 
-            // Optional: auto-assign a courier right away (requires Auto Assign
-            // to be configured in Shipmozo panel under Settings > Auto assign)
-            const assignRes = await autoAssignOrder(order._id.toString());
-            if (assignRes.result === "1") {
-                order.waybill = assignRes.data?.awb_number;
-                order.courierPartner = assignRes.data?.courier_company;
+            // Assign a courier + generate AWB right away.
+            // courier_id 0 lets Shiprocket auto-pick a recommended courier.
+            const assignRes = await assignAWB(shiprocketRes.shipment_id, 0);
+            const assignedData = assignRes?.response?.data;
+
+            if (assignRes?.awb_assign_status === 1 && assignedData?.awb_code) {
+                order.waybill = assignedData.awb_code;
+                order.courierPartner = assignedData.courier_name;
                 await order.save();
+            } else {
+                console.error("Shiprocket AWB assignment failed:", assignRes);
             }
         } else {
-            console.error("Shipmozo push-order failed:", shipmozoRes.message);
+            console.error("Shiprocket push-order failed:", shiprocketRes.message || shiprocketRes);
         }
     } catch (shipErr) {
         // Don't fail the response if shipping push fails —
         // log it and handle manually / via a retry job
-        console.error("Shipmozo integration error:", shipErr.response?.data || shipErr.message);
+        console.error("Shiprocket integration error:", shipErr.response?.data || shipErr.message);
     }
 };
 
@@ -187,7 +207,7 @@ export const createOrder = async (req, res) => {
 
         // ---------------- COD branch ----------------
         // fixed — no Razorpay order needed for COD; order is placed immediately
-        // and finalized (stock decrement + Shipmozo push) right here, since
+        // and finalized (stock decrement + Shiprocket push) right here, since
         // there's no verifyPayment call coming for COD orders
         if (mode === "COD") {
             const order = await Order.create({
@@ -276,7 +296,7 @@ export const verifyPayment = async (req, res) => {
         }
 
         // Idempotency guard — fixed: prevents double stock-decrement and
-        // double Shipmozo push if this endpoint is called more than once
+        // double Shiprocket push if this endpoint is called more than once
         // for the same order (retry, double-click, duplicate call)
         if (order.paymentStatus === "paid") {
             return res.status(200).json({ success: true, message: "Already verified", order });
@@ -293,7 +313,7 @@ export const verifyPayment = async (req, res) => {
             .digest("hex");
 
         // Timing-safe comparison — fixed: was expectedSignature === razorpay_signature
-        let isAuthentic = false; 
+        let isAuthentic = false;
         try {
             const expectedBuf = Buffer.from(expectedSignature);
             const providedBuf = Buffer.from(razorpay_signature || "");
@@ -315,7 +335,7 @@ export const verifyPayment = async (req, res) => {
         order.razorpaySignature = razorpay_signature;
         await order.save();
 
-        // fixed — stock decrement + Shipmozo push now shared with COD path via finalizeOrder()
+        // fixed — stock decrement + Shiprocket push now shared with COD path via finalizeOrder()
         await finalizeOrder(order, "PREPAID");
 
         res.status(200).json({ success: true, message: "Payment verified", order });
@@ -341,7 +361,6 @@ export const getUserOrders = async (req, res) => {
     }
 };
 
-// ---------------- Get all orders (admin) ----------------
 // ---------------- Get all orders (admin) ----------------
 export const getAllOrders = async (req, res) => {
     try {
@@ -402,10 +421,11 @@ export const getOrderTracking = async (req, res) => {
             });
         }
 
-        // Live lookup from Shipmozo (fresher than the last cron sync)
+        // Live lookup from Shiprocket (fresher than the last cron sync)
         const trackRes = await trackOrder(order.waybill);
+        const trackingData = trackRes?.tracking_data;
 
-        if (trackRes.result !== "1") {
+        if (!trackingData || trackingData.error) {
             // Fall back to whatever we last stored via the cron sync
             return res.status(200).json({
                 success: true,
@@ -415,7 +435,7 @@ export const getOrderTracking = async (req, res) => {
             });
         }
 
-        const liveStatus = mapShipmozoStatus(trackRes.data.current_status);
+        const liveStatus = mapShiprocketStatus(trackingData.shipment_status ?? trackingData.track_status);
 
         // Keep DB in sync opportunistically, same as the cron job would
         if (liveStatus !== order.orderStatus) {
@@ -424,15 +444,18 @@ export const getOrderTracking = async (req, res) => {
             await order.save();
         }
 
+        const latestActivity = trackingData.shipment_track_activities?.[0];
+
         res.status(200).json({
             success: true,
             orderStatus: liveStatus,
             trackingAvailable: true,
             live: true,
-            courier: trackRes.data.courier,
-            awbNumber: trackRes.data.awb_number,
-            expectedDeliveryDate: trackRes.data.expected_delivery_date,
-            scanDetail: trackRes.data.scan_detail,
+            courier: trackingData.shipment_track?.[0]?.courier_name,
+            awbNumber: order.waybill,
+            expectedDeliveryDate: trackingData.etd,
+            scanDetail: trackingData.shipment_track_activities,
+            latestActivity,
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });

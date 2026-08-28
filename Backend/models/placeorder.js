@@ -73,20 +73,20 @@ const orderSchema = new mongoose.Schema({
         default: "pending",
     },
 
-    // ---- Shipmozo / shipping ----
+    // ---- Shiprocket / shipping ----
     courierPartner: { type: String, default: "Delhivery" },
-    waybill: { type: String },
-    trackingUrl: { type: String },
+    waybill: { type: String },        // AWB / tracking number
+    trackingUrl: { type: String },    // label PDF URL after shipment creation
 
-    // Package details — required by Shipmozo's push-order API
+    // Package details — required by Shiprocket's create-order API
     packageWeightGrams: { type: Number, default: 500 },
     packageLengthCm: { type: Number, default: 10 },
     packageWidthCm: { type: Number, default: 10 },
     packageHeightCm: { type: Number, default: 10 },
 
-    // Tracks whether push-order to Shipmozo succeeded, and their reference
-    shipmozoPushed: { type: Boolean, default: false },
-    shipmozoReferenceId: { type: String },
+    // Tracks whether push-order to Shiprocket succeeded, and Shiprocket's own shipment id
+    shiprocketPushed: { type: Boolean, default: false },
+    shipmentId: { type: String },
 
     orderStatus: {
         type: String,

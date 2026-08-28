@@ -1,18 +1,28 @@
-// Maps Shipmozo's current_status text to your Order.orderStatus enum.
-// Shipmozo's exact status strings aren't fully listed in the docs you have,
-// so this covers the common courier-status vocabulary. Log unmapped values
-// (see catch-all below) and extend this list as you see real statuses come in.
+// Add this to utils/trackingStatusMap.js, replacing mapShipmozoStatus.
+// Shiprocket's `shipment_status` in the tracking response is a numeric code
+// (and `track_status` in some responses is a small int too). Verify these
+// against a real tracking response in your account, since Shiprocket doesn't
+// publish a single canonical status-code table — the mapping below covers
+// the commonly documented codes.
+export const mapShiprocketStatus = (status) => {
+    const code = Number(status);
 
-export const mapShipmozoStatus = (shipmozoStatus = "") => {
-    const s = shipmozoStatus.toLowerCase();
+    const map = {
+        1: "shipment_created",  // AWB assigned / order booked
+        2: "shipment_created",  // pickup scheduled
+        3: "shipped",           // picked up / in transit
+        6: "shipped",           // out for delivery
+        7: "delivered",
+        8: "cancelled",
+        9: "rto",                // return to origin initiated
+        11: "rto",                // RTO delivered
+        17: "cancelled",
+        18: "shipped",           // in transit (alt code seen in some responses)
+        19: "shipped",           // out for delivery (alt code)
+        20: "delivered",         // alt code
+        38: "shipped",
+        42: "shipped",
+    };
 
-    if (s.includes("delivered")) return "delivered";
-    if (s.includes("out for delivery")) return "out_for_delivery";
-    if (s.includes("in transit") || s.includes("intransit")) return "in_transit";
-    if (s.includes("picked up") || s.includes("pickup done")) return "picked_up";
-    if (s.includes("rto")) return "rto";
-    if (s.includes("cancel")) return "cancelled";
-
-    // Pickup Pending / shipment created / anything else not yet in transit
-    return "shipment_created";
+    return map[code] || "shipment_created";
 };
