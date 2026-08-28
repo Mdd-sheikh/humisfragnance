@@ -101,7 +101,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
         }
     };
 
-    /*
+    
     const switchMode = (nextMode) => {
         if (loading) return;
         setMode(nextMode);
@@ -116,7 +116,7 @@ export default function Auth({ onClose, setIsAuthOpen }) {
                 return copy;
             });
         }
-    };*/
+    };
 
 
     return (
