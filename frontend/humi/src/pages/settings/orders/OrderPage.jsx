@@ -206,7 +206,7 @@ function OrderDetailModal({ order, onClose, tracking, trackingLoading, trackingE
                                     </p>
                                 </div>
                                 {typeof p.price === "number" && (
-                                    <p className="op-product-price">${p.price.toFixed(2)}</p>
+                                    <p className="op-product-price">₹{p.price.toFixed(2)}</p>
                                 )}
                             </li>
                         ))}
@@ -217,18 +217,18 @@ function OrderDetailModal({ order, onClose, tracking, trackingLoading, trackingE
                         {typeof order.itemsTotal === "number" && (
                             <div className="op-summary-row">
                                 <span>Items total</span>
-                                <span>${order.itemsTotal.toFixed(2)}</span>
+                                <span>₹{order.itemsTotal.toFixed(2)}</span>
                             </div>
                         )}
                         {typeof order.shippingFee === "number" && (
                             <div className="op-summary-row">
                                 <span>Shipping</span>
-                                <span>{order.shippingFee === 0 ? "Free" : `$${order.shippingFee.toFixed(2)}`}</span>
+                                <span>{order.shippingFee === 0 ? "Free" : `₹${order.shippingFee.toFixed(2)}`}</span>
                             </div>
                         )}
                         <div className="op-summary-row op-summary-total">
                             <span>Total paid</span>
-                            <span>${order.price.toFixed(2)}</span>
+                            <span>₹{order.price.toFixed(2)}</span>
                         </div>
                     </div>
 
@@ -512,7 +512,7 @@ function OrderPage() {
                                 </p>
                             )}
                         </div>
-                        <p className="op-product-price">${currentOrder.price.toFixed(2)}</p>
+                        <p className="op-product-price">₹{currentOrder.price.toFixed(2)}</p>
                     </div>
                 )}
 
@@ -570,7 +570,7 @@ function OrderPage() {
                             </p>
                         </div>
                         <div className="op-order-right">
-                            <p className="op-order-price">${o.price.toFixed(2)}</p>
+                            <p className="op-order-price">₹{o.price.toFixed(2)}</p>
                             <StatusBadge status={o.status} />
                         </div>
                     </div>
