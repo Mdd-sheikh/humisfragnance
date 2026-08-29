@@ -12,7 +12,7 @@ const slides = [
       "Discover a curated selection of rare notes, blended meticulously for those who appreciate the poetry of scent.",
     ctaText: "Shop Now",
     ctaLink: "/shop",
-    image: Assets.section_image_one,
+    image: Assets.daily_wear,
   },
   {
     eyebrow: "Limited Edition",
@@ -21,7 +21,7 @@ const slides = [
       "A warm, resinous signature scent layered with vanilla and soft musk — made for evenings that linger.",
     ctaText: "Explore",
     ctaLink: "/collections/amber",
-    image: Assets.section_image_two,
+    image: Assets.party_wear,
   },
   {
     eyebrow: "Bestseller",
@@ -30,7 +30,7 @@ const slides = [
       "Delicate florals wrapped in silk-soft powder notes. Our most-loved fragrance, now restocked.",
     ctaText: "Shop Now",
     ctaLink: "/shop/velvet-bloom",
-    image: Assets.section_image_three,
+    image: Assets.summer_wear,
   },
 ];
 
