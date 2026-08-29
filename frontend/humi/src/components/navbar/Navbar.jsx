@@ -119,9 +119,7 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
                             Shop
                         </NavLink>
 
-                        <NavLink to="/collections">
-                            Collections
-                        </NavLink>
+                        
 
                         <NavLink to="/gift">
                             Gift
@@ -196,22 +194,18 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
                                             Orders
                                         </Link>
 
-                                        <Link to="/payments">
-                                            <FiCreditCard />
-                                            Payments
+
+                                
+                                        <Link to="/settings">
+                                            <FiSettings />
+                                            Settings
                                         </Link>
-
-
                                         <button
                                             onClick={handleLogoutClick}
                                         >
                                             <FiLogOut />
                                             Logout
                                         </button>
-                                        <Link to="/settings">
-                                            <FiSettings />
-                                            Settings
-                                        </Link>
                                         
                                         
 
@@ -300,12 +294,6 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
                         Shop
                     </NavLink>
 
-                    <NavLink
-                        to="/collections"
-                        onClick={closeMenu}
-                    >
-                        Collections
-                    </NavLink>
 
                     <NavLink
                         to="/gift"
@@ -364,13 +352,6 @@ function Navbar({ setIsAuthOpen, isAuthopen }) {
                             Orders
                         </NavLink>
 
-                        <NavLink
-                            to="/payments"
-                            onClick={closeMenu}
-                        >
-                            <FiCreditCard />
-                            Payments
-                        </NavLink>
 
                        <Link to="/settings"> <button onClick={() => {
                             closeMenu();

@@ -3,6 +3,22 @@ import Users from "../models/User.js";
 
 //================================================== add item in cart ====================================
 
+
+// Wipes the entire cart — used after an order is successfully placed
+export const clearCartItem = async (userId) => {
+    console.log("clearCart called for user:", userId);
+    const userData = await Users.findById(userId);
+    if (!userData) {
+        throw new Error("User not found");
+    }
+    console.log("cart before:", userData.cartdata);
+    userData.cartdata = {};
+    userData.markModified("cartdata");
+    await userData.save();
+    console.log("cart after save:", userData.cartdata);
+    return userData.cartdata;
+};
+
 export const AddtoCart = async (req, res) => {
     try {
         const userId = req.user.id;

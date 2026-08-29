@@ -3,8 +3,8 @@ import razorpay from "../config/razorpay.js";
 import Product from "../models/attarModel.js";
 import Address from "../models/addressModel.js"
 import Order from "../models/placeorder.js";
-
-import { pushOrder,assignAWB, trackOrder} from "../services/shiprocketservice.js";
+import { removefromCart,clearCartItem } from "./cartController.js";
+import { pushOrder, assignAWB, trackOrder } from "../services/shiprocketservice.js";
 import shiprocket from "../config/shiprocket.js";
 import { mapShiprocketStatus } from "../utils/trackingStatusMap.js";
 
@@ -232,6 +232,7 @@ export const createOrder = async (req, res) => {
             });
 
             await finalizeOrder(order, "COD");
+            await clearCart(userId); // 👈 added — empty cart after COD order placed
 
             return res.status(200).json({
                 success: true,
@@ -337,6 +338,7 @@ export const verifyPayment = async (req, res) => {
 
         // fixed — stock decrement + Shiprocket push now shared with COD path via finalizeOrder()
         await finalizeOrder(order, "PREPAID");
+        await clearCart(userId); // 👈 added — empty cart once online payment is verified
 
         res.status(200).json({ success: true, message: "Payment verified", order });
     } catch (err) {

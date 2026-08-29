@@ -146,9 +146,7 @@ function Timeline({ status, placedDate }) {
                     );
                 })}
             </ol>
-            {status !== "Delivered" && (
-                <p className="op-eta">Estimated delivery: Tuesday, Oct 24th</p>
-            )}
+            
         </>
     );
 }
