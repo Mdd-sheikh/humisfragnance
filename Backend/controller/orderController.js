@@ -232,7 +232,7 @@ export const createOrder = async (req, res) => {
             });
 
             await finalizeOrder(order, "COD");
-            await clearCart(userId); // 👈 added — empty cart after COD order placed
+            await clearCartItem(userId); // 👈 added — empty cart after COD order placed
 
             return res.status(200).json({
                 success: true,
