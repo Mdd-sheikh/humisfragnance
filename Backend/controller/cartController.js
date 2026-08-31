@@ -17,7 +17,9 @@ export const clearCartItem = async (userId) => {
     await userData.save();
     console.log("cart after save:", userData.cartdata);
     return userData.cartdata;
+
 };
+
 
 export const AddtoCart = async (req, res) => {
     try {
