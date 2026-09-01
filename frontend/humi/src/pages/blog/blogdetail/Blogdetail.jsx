@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { blogPosts } from "../../../assets/Assests";
-import "./BlogDetail.css";
+import "./Blogdetail.css";
 
 const BlogDetail = () => {
     const { slug } = useParams();
