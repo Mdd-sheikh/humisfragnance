@@ -27,6 +27,9 @@ import humis_shop_banner from '../assets/product_images/humis_shop.png'
 import blog_image_one from '../assets/blog-images/image_one.png'
 import blog_image_two from '../assets/blog-images/image_two.png'
 import blog_image_three from '../assets/blog-images/image_three.png'
+import blog_image_four from '../assets/blog-images/image_four.png'
+import blog_image_five from '../assets/blog-images/image_five.png'
+import blog_image_six from '../assets/blog-images/image_six.png'
 
 
 // ocational wear 
@@ -551,6 +554,131 @@ export const GIFT_SETS = [
     price: 310.0,
     image: for_gift_three,
   },
+];
+
+
+
+// Each post carries its own SEO fields so a future BlogPost detail page can
+// drop metaTitle/metaDescription straight into <head>, and every image has a
+// descriptive, keyword-relevant alt — never the filename or a generic label.
+
+export const blogPosts = [
+    {
+        id: 1,
+        slug: "the-alchemy-of-gold-and-glass",
+        title: "The Alchemy of Gold & Glass",
+        category: "News",
+        date: "October 24, 2023",
+        timeAgo: "2 hours ago",
+        excerpt:
+            "Discover the meticulous process behind our signature flacons. From the initial conceptual sketches to the final polish, every detail is engineered to reflect the precious essence within.",
+        bannerText:
+            "The Alchemy of Gold & Glass: A deep dive into our artisanal flacon production... New Botanical Essence collection launching next month...",
+        image: blog_image_one,
+        imageAlt:
+            "Woman holding a Humi's Fragrance perfume bottle with a gold cap in a garden setting",
+        featured: true,
+        topStory: false,
+        metaTitle: "The Alchemy of Gold & Glass | Humi's Fragrance Journal",
+        metaDescription:
+            "Go behind the scenes of Humi's Fragrance flacon production — from conceptual sketches to the final gold-capped polish.",
+        keywords: ["perfume bottle design", "artisanal flacon", "luxury fragrance packaging"],
+    },
+    {
+        id: 2,
+        slug: "decoding-botanical-essences",
+        title: "Decoding Botanical Essences",
+        category: "Fragrance Guides",
+        date: "October 24, 2023",
+        timeAgo: "2 hours ago",
+        excerpt:
+            "A closer look at how raw botanicals are transformed into the refined notes at the heart of every Humi's fragrance.",
+        image: blog_image_two,
+        imageAlt:
+            "Dried florals, brass scales, and amber extract vials used in botanical fragrance formulation",
+        featured: false,
+        topStory: true,
+        metaTitle: "Decoding Botanical Essences | Humi's Fragrance Journal",
+        metaDescription:
+            "How raw botanicals become the refined top and heart notes in a Humi's fragrance — a guide to natural essence extraction.",
+        keywords: ["botanical essence", "natural fragrance notes", "perfume ingredients"],
+    },
+    {
+        id: 3,
+        slug: "the-weight-of-luxury",
+        title: "The Weight of Luxury",
+        category: "Artisanal Craft",
+        date: "October 24, 2023",
+        timeAgo: "5 hours ago",
+        excerpt:
+            "Why the heft of a bottle in your hand says as much about craftsmanship as the scent it holds.",
+        image: blog_image_three,
+        imageAlt:
+            "Close-up of a weighted glass perfume bottle stopper on a marble surface",
+        featured: false,
+        topStory: true,
+        metaTitle: "The Weight of Luxury | Humi's Fragrance Journal",
+        metaDescription:
+            "Why bottle weight and glass density are as much a mark of fragrance craftsmanship as the scent itself.",
+        keywords: ["luxury perfume bottle", "glass craftsmanship", "fragrance packaging design"],
+    },
+    {
+        id: 4,
+        slug: "the-scientists-palette",
+        title: "The Scientist's Palette",
+        category: "Fragrance Guides",
+        date: "October 20, 2023",
+        timeAgo: "1 day ago",
+        excerpt:
+            "Inside the lab where precision instruments and a trained nose work side by side to balance a new formula.",
+        image: blog_image_four,
+        imageAlt:
+            "Perfumer's lab bench with pipettes, measuring beakers, and fragrance oil sample vials",
+        featured: false,
+        topStory: false,
+        metaTitle: "The Scientist's Palette | Humi's Fragrance Journal",
+        metaDescription:
+            "A look inside the fragrance lab, where precision instruments and a trained nose balance every new formula.",
+        keywords: ["perfume formulation", "fragrance lab", "scent blending process"],
+    },
+    {
+        id: 5,
+        slug: "humis-signature-story",
+        title: "Humi's Signature Story",
+        category: "News",
+        date: "October 18, 2023",
+        timeAgo: "3 days ago",
+        excerpt:
+            "The story behind our first signature scent, and the year it took to get the opening notes right.",
+        image:blog_image_five,
+        imageAlt:
+            "Humi's Fragrance signature eau de parfum bottle displayed on a linen backdrop",
+        featured: false,
+        topStory: false,
+        metaTitle: "Humi's Signature Story | Humi's Fragrance Journal",
+        metaDescription:
+            "The year-long journey behind Humi's first signature scent and how its opening notes came together.",
+        keywords: ["signature fragrance", "eau de parfum", "Humi's Fragrance story"],
+    },
+    {
+        id: 6,
+        slug: "petals-and-patience",
+        title: "Petals & Patience",
+        category: "Artisanal Craft",
+        date: "October 15, 2023",
+        timeAgo: "6 days ago",
+        excerpt:
+            "Why some of our botanical extracts take months of slow maceration before they're ready to use.",
+        image: blog_image_six,
+        imageAlt:
+            "Rose petals and botanical extracts steeping during the slow maceration process",
+        featured: false,
+        topStory: false,
+        metaTitle: "Petals & Patience | Humi's Fragrance Journal",
+        metaDescription:
+            "Inside the months-long maceration process that gives Humi's botanical extracts their depth.",
+        keywords: ["fragrance maceration", "botanical extraction", "natural perfume ingredients"],
+    },
 ];
 
 

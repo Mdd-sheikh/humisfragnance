@@ -22,6 +22,9 @@ import "react-toastify/dist/ReactToastify.css";
 import './styles/toast.css'
 import OrderPage from './pages/settings/orders/OrderPage'
 import OrderConfirmation from './pages/order-confirmation-page/OrderConfirmation'
+import ScrollToTop from './components/ScrollToTop/ScrollToTop'
+import Blog from './pages/blog/Blog'
+import BlogDetail from './pages/blog/blogdetail/Blogdetail'
 
 
 
@@ -37,6 +40,7 @@ function App() {
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="app">
         <Navbar isAuthopen={IsAuthOpen} setIsAuthOpen={setIsAuthOpen} />
+        <ScrollToTop/>
         <Routes>
           <Route path='/' element={<Home />} />
           <Route element={<PrivateRoute isAuthopen={IsAuthOpen} setIsAuthOpen={setIsAuthOpen} />}>
@@ -52,6 +56,8 @@ function App() {
           <Route path='/gift' element={<Giftpage />} />
           <Route path='/collections' element={<CollectionPage />} />
           <Route path='/about' element={<Aboutpage />} />
+          <Route path='/blog' element={<Blog/>} />
+          <Route path='/blog/:slug' element={<BlogDetail/>}/>
 
         </Routes>
         <Footer />
