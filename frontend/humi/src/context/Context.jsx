@@ -6,7 +6,7 @@ export const Context = createContext(null);
 
 const ContextProvider = ({ children }) => {
 
-    const API_URL = "https://humisfragnance-5.onrender.com/api";  // for global url 
+    const API_URL = "https://humisfragnance-6.onrender.com/api";  // for global url 
 
     const [token, setToken] = useState(localStorage.getItem("token") || null);
     const [cart, setCart] = useState({}); // { [productId]: { ...product, qty } } — local display shape

@@ -5,7 +5,7 @@ export const Context = createContext(null)
 
 const Contextprovider = ({ children }) => {
 
-    const API_URL = "https://humisfragnance-5.onrender.com";
+    const API_URL = "https://humisfragnance-6.onrender.com";
 
     const value = {
      API_URL,
