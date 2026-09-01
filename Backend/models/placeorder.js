@@ -88,6 +88,14 @@ const orderSchema = new mongoose.Schema({
     shiprocketPushed: { type: Boolean, default: false },
     shipmentId: { type: String },
 
+    // ---- Shipmozo ----
+    // Tracks whether push-order to Shipmozo succeeded. Shipmozo has no
+    // separate shipment_id concept — it works off order_id directly.
+    shipmozoPushed: { type: Boolean, default: false },
+    shipmozoOrderId: { type: String },      // Shipmozo's order_id (mirrors your own order_id sent to push-order)
+    shipmozoReferenceId: { type: String },  // reference_id returned by push-order
+    shipmozoCourierId: { type: Number },    // courier_id used in assign-courier (from Rate-Calculator)
+
     orderStatus: {
         type: String,
         enum: [
@@ -108,6 +116,7 @@ const orderSchema = new mongoose.Schema({
 
 orderSchema.index({ user: 1, createdAt: -1 });
 orderSchema.index({ waybill: 1 });
+
 
 const Order = mongoose.model("Order", orderSchema);
 export default Order;
