@@ -154,6 +154,7 @@
   --transition-slow: 0.5s ease;
 }
 
+
 body {
   margin: 0;
   background: var(--bg-primary);
