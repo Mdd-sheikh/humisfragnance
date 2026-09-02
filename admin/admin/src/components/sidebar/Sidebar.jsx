@@ -16,6 +16,7 @@ const navItems = [
     { to: "/add-product", label: "Add Product", icon: PackagePlus },
     { to: "/orders", label: "Orders", icon: ClipboardList },
     { to: "/productlist", label: "Product Stock", icon: Boxes },
+    {to:"/blog",label:"blogs",icon:UserCircle2}
 ];
 
 const Sidebar = () => {

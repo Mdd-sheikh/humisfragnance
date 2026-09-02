@@ -50,7 +50,7 @@
 
 /* Sidebar */
 .sidebar {
-    margin-top: 50px;
+    margin-top: 0px;
     top: var(--header-height);
     left: 0;
     bottom: 0;

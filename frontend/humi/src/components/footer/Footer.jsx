@@ -30,16 +30,16 @@ function Footer() {
 
                         <a href="/">New Arrivals</a>
                         <a href="/">Best Sellers</a>
-                        <a href="/">Gift Concierge</a>
-                        <a href="/">Limited Editions</a>
+                        <a href="/gift">Gift Concierge</a>
+                        <a href="/shop">Limited Editions</a>
                     </div>
 
                     <div className="footer__column">
                         <h4>Boutique</h4>
 
-                        <a href="/">Store Locator</a>
-                        <a href="/">Our Heritage</a>
-                        <a href="/">Scent Masterclass</a>
+                        <a href="/about">Store Locator</a>
+                        <a href="/sitemap.xml">Sitemap</a>
+                        <a href="/blog">Blog</a>
                         <a href="/">Contact Us</a>
                     </div>
 

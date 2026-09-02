@@ -8,6 +8,7 @@ import cartRouter from './routes/cartRouter.js';
 import Profilerouter from './routes/profileRouter.js';
 import AddressRouter from './routes/addressRoute.js';
 import placeorderRouter from './routes/placeorderRouter.js';
+import BlogRoute from './routes/BlogRoute.js';
 
 dotenv.config()
 
@@ -26,6 +27,7 @@ app.use("/api/cart", cartRouter);
 app.use("/api/profile",Profilerouter);
 app.use("/api/personal/address",AddressRouter);
 app.use("/api/order", placeorderRouter); 
+app.use("/api/blog",BlogRoute)
 
 
 
