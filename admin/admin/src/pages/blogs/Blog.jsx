@@ -141,7 +141,7 @@ export default function Blog() {
     try {
       const formData = buildFormData();
 
-      await axios.post(`${API_URl}/blog/create`, formData, {
+      await axios.post(`${API_URl}/api/blog/create`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true, // remove if your Auth doesn't rely on cookies
       });
