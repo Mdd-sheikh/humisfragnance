@@ -63,7 +63,7 @@ const Productlists = () => {
             if (searchTerm.trim()) params.search = searchTerm.trim();
             if (activeFilter !== "All Items") params.category = activeFilter;
 
-            const res = await axios.get(`${API_URL}/api/product/getallattar`);
+            const res = await axios.get(`${API_URL}/api/product/getallatter`);
 
             const { items, total } = mapResponse(res.data);
             setProducts(items);
