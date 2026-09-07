@@ -15,7 +15,7 @@ const imageSchema = new mongoose.Schema({
 }, { _id: false });
 
 const attarSchema = new mongoose.Schema({
-    name: { 
+    name: {
         type: String,
         required: true,
         trim: true,
@@ -60,6 +60,7 @@ const attarSchema = new mongoose.Schema({
         enum: ["floral", "woody", "musk", "oud", "citrus", "spicy"], // adjust to your actual categories
         index: true,
     },
+
     tags: [{ type: String }], // e.g. ["bestseller", "new", "unisex"], useful for filters
 
     brand: {
@@ -91,11 +92,14 @@ const attarSchema = new mongoose.Schema({
         metaTitle: { type: String },
         metaDescription: { type: String },
     },
+    display: {
+        type: String,
+    }
 
 }, { timestamps: true });
 
 // Text index for search functionality (name + description)
 attarSchema.index({ name: "text", description: "text", tags: "text" });
 
-const Product = mongoose.model("Attar", attarSchema); 
+const Product = mongoose.model("Attar", attarSchema);
 export default Product;
