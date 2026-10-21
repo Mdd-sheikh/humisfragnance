@@ -32,6 +32,10 @@
     box-sizing: border-box;
     padding: 16px;
 }
+.insights__card-link {
+    text-decoration: none;
+    color: inherit;
+}
 
 /* ---------- Mobile-first base ---------- */
 
@@ -51,7 +55,7 @@
     font-weight: 700;
     font-size: clamp(28px, 8vw, 40px);
     line-height: 1.1;
-    color: var(--text-primary);
+    color: var(--text-primary); 
 }
 
 .insights__eyebrow {
@@ -112,12 +116,11 @@
     font-family: var(--font-display);
     font-weight: 600;
     font-size: 19px;
-    line-height: 1.3;
     color: var(--text-primary);
 }
 
 .insights__card-title--featured {
-    text-decoration: underline;
+    text-decoration: none;
     text-decoration-color: var(--color-primary-light);
     text-underline-offset: 4px;
 }
