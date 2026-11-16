@@ -20,6 +20,7 @@ import {
     Package,
 } from "lucide-react";
 import { Context } from "../../context/Context";
+import CustomerQueries from "./CustomerQueries";
 import "./Dashboard.css";
 
 const formatCompactMoney = (value) => {
@@ -259,6 +260,9 @@ const Dashboard = () => {
                     </ResponsiveContainer>
                 </div>
             </div>
+
+            {/* Customer queries (contact form messages) */}
+            <CustomerQueries />
 
             {/* Recent orders */}
             <div className="panel">

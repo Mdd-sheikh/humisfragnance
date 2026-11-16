@@ -6,6 +6,7 @@ import {
     ClipboardList,
     Boxes,
     UserCircle2,
+    MessageSquare,
     Menu,
     X,
 } from "lucide-react";
@@ -16,7 +17,8 @@ const navItems = [
     { to: "/add-product", label: "Add Product", icon: PackagePlus },
     { to: "/orders", label: "Orders", icon: ClipboardList },
     { to: "/productlist", label: "Product Stock", icon: Boxes },
-    {to:"/blog",label:"blogs",icon:UserCircle2}
+    {to:"/blog",label:"blogs",icon:UserCircle2},
+    { to: "/queries", label: "Customer Queries", icon: MessageSquare },
 ];
 
 const Sidebar = () => {

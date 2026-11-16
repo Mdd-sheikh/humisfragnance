@@ -12,6 +12,7 @@ import Sidebar from './components/sidebar/Sidebar'
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"
 import Blog from './pages/blogs/Blog'
+import Queries from './pages/queries/Queries'
 
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
               <Route path='/orders' element={<Orders />} />
               <Route path='/add-product' element={<AddProduct />} />
               <Route path='/blog' element={<Blog/>}/>
+              <Route path='/queries' element={<Queries />} />
             </Routes>
           </div>
         </div>

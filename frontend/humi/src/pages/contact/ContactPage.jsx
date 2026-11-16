@@ -1,7 +1,13 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import axios from "axios";
+import { Context } from "../../context/Context";
 import "./ContactPage.css";
 
 export default function ContactPage() {
+  const { API_URL } = useContext(Context);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -27,23 +33,44 @@ export default function ContactPage() {
     return next;
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    if (sending) return;
     const next = validate();
     setErrors(next);
+    setSendError("");
     if (Object.keys(next).length > 0) {
       setSubmitted(false);
       return;
     }
-    setSubmitted(true);
-    setForm({
-      name: "",
-      email: "",
-      phone: "",
-      subject: "General Inquiry",
-      message: "",
-    });
-    setTimeout(() => setSubmitted(false), 5000);
+
+    setSending(true);
+    try {
+      await axios.post(`${API_URL}/query/create`, {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        subject: form.subject,
+        message: form.message.trim(),
+      });
+      setSubmitted(true);
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        subject: "General Inquiry",
+        message: "",
+      });
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err) {
+      setSubmitted(false);
+      setSendError(
+        err.response?.data?.message ||
+          "We couldn't send your message. Please try again or reach us on WhatsApp."
+      );
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -204,6 +231,7 @@ export default function ContactPage() {
                     id="message"
                     name="message"
                     placeholder="Write your message here..."
+                    maxLength={2000}
                     value={form.message}
                     onChange={handleChange}
                   />
@@ -213,13 +241,19 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <button className="rp-submit-btn" type="submit">
-                <span>Send message</span>
+              <button className="rp-submit-btn" type="submit" disabled={sending}>
+                <span>{sending ? "Sending…" : "Send message"}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 2L11 13" />
                   <path d="M22 2l-7 20-4-9-9-4 20-7z" />
                 </svg>
               </button>
+
+              {sendError && (
+                <div className="rp-form-status rp-show rp-form-status--error" role="alert">
+                  {sendError}
+                </div>
+              )}
 
               {submitted && (
                 <div className="rp-form-status rp-show">
