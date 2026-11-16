@@ -93,7 +93,9 @@ export const getAllPosts = async (req, res) => {
 export const getPostBySlug = async (req, res) => {
     try {
         // Drafts are hidden from the public unless ?includeDrafts=true (used by the admin edit view)
-        const filter = { slug: req.params.slug };
+        // allow lookup by slug OR mongo _id, so /blog/<id> links work too
+        const key = req.params.slug;
+        const filter = /^[0-9a-fA-F]{24}$/.test(key) ? { $or: [{ slug: key }, { _id: key }] } : { slug: key };
         if (req.query.includeDrafts !== "true") filter.published = true;
 
         const post = await Blog.findOne(filter);
