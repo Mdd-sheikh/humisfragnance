@@ -4,6 +4,7 @@ import {
     getPostBySlug,
     createPost,
     updatePost,
+    deletePost,
     upload,
 } from "../controller/BlogController.js";
 import Auth from "../middleware/Auth.js";
@@ -23,5 +24,8 @@ BlogRoute.post("/create", upload.array("images", MAX_IMAGES), createPost);
 
 // UPDATE post
 BlogRoute.put("/update/:slug", Auth, upload.array("images", MAX_IMAGES), updatePost);
+
+// DELETE post
+BlogRoute.delete("/delete/:slug", Auth, deletePost);
 
 export default BlogRoute;

@@ -163,3 +163,23 @@
         grid-template-columns: 1fr;
     }
 }
+/* ---------------- Loading state + extra images ---------------- */
+.blog-detail-state {
+    padding: var(--space-xl, 4rem) 0;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.blog-detail-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-md);
+    margin: var(--space-lg, 2rem) 0;
+}
+
+.blog-detail-gallery img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+    display: block;
+}

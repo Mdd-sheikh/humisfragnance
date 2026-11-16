@@ -1,0 +1,321 @@
+/* Shared modal shell (edit + delete confirm) */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(27, 28, 28, 0.55);
+}
+
+.modal {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 680px;
+    max-height: calc(100vh - 2rem);
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border-color, #d1c5af);
+    border-radius: 14px;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    overflow: hidden;
+}
+
+.modal--sm {
+    max-width: 420px;
+}
+
+.modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.modal__close {
+    display: flex;
+    padding: 0.35rem;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.modal__close:hover {
+    background: var(--bg-muted);
+}
+
+.modal__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem 1.25rem;
+    overflow-y: auto;
+}
+
+.modal__section {
+    margin: 0.5rem 0 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+}
+
+.modal__text {
+    margin: 0;
+    padding: 1rem 1.25rem 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.modal__error {
+    margin: 0;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    background: rgba(186, 26, 26, 0.08);
+    color: var(--error);
+    font-size: 0.82rem;
+}
+
+.modal__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    padding: 1rem 1.25rem;
+}
+
+.modal__body .modal__footer {
+    padding: 0.5rem 0 0;
+}
+
+/* Fields */
+.mfield {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.mfield > span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.mfield input,
+.mfield select,
+.mfield textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.mfield textarea {
+    resize: vertical;
+}
+
+.mfield input:focus,
+.mfield select:focus,
+.mfield textarea:focus {
+    outline: none;
+    border-color: var(--color-primary-light);
+}
+
+.mfield input:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.mfield-row {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* Images */
+.edit-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.edit-images__item {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg-muted);
+}
+
+.edit-images__item--new {
+    border-color: var(--color-primary-light);
+}
+
+.edit-images__item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.edit-images__item button {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    display: flex;
+    padding: 3px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(27, 28, 28, 0.75);
+    color: #fff;
+    cursor: pointer;
+}
+
+.edit-images__add {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 76px;
+    height: 76px;
+    border: 1px dashed var(--border-color);
+    border-radius: 10px;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.edit-images__add:hover {
+    border-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+/* Variants */
+.variant-edit {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr 0.9fr auto;
+    gap: 0.5rem;
+    align-items: end;
+}
+
+.variant-edit__remove {
+    display: flex;
+    padding: 0.55rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--error);
+    cursor: pointer;
+}
+
+.variant-edit__remove:hover {
+    background: rgba(186, 26, 26, 0.08);
+}
+
+/* Flags */
+.modal__flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin-top: 0.25rem;
+}
+
+.mcheck {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+}
+
+/* Buttons */
+.mbtn-ghost,
+.mbtn-solid,
+.mbtn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    align-self: flex-start;
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.modal__footer .mbtn-ghost,
+.modal__footer .mbtn-solid,
+.modal__footer .mbtn-danger {
+    align-self: auto;
+}
+
+.mbtn-ghost {
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.mbtn-ghost:hover:not(:disabled) {
+    background: var(--bg-muted);
+}
+
+.mbtn-solid {
+    border: 1px solid var(--color-primary);
+    background: var(--color-primary);
+    color: var(--text-light);
+}
+
+.mbtn-danger {
+    border: 1px solid var(--error);
+    background: var(--error);
+    color: #fff;
+}
+
+.mbtn-solid:disabled,
+.mbtn-danger:disabled,
+.mbtn-ghost:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+    .mfield-row {
+        flex-direction: column;
+    }
+
+    .variant-edit {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .variant-edit__remove {
+        grid-column: 2;
+        justify-self: end;
+    }
+}

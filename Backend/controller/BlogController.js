@@ -55,7 +55,10 @@ const deleteMultipleFromCloudinary = async (images = []) => {
  */
 export const getAllPosts = async (req, res) => {
     try {
-        const { published, category, featured, page = 1, limit = 10 } = req.query;
+        const { published, category, featured } = req.query;
+        // clamp paging so ?limit=0 or a huge limit can't break or dump the collection
+        const page = Math.max(1, Number(req.query.page) || 1);
+        const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
 
         const filter = {};
         if (published !== undefined) filter.published = published === "true";
@@ -64,8 +67,8 @@ export const getAllPosts = async (req, res) => {
 
         const posts = await Blog.find(filter)
             .sort({ date: -1 })
-            .skip((Number(page) - 1) * Number(limit))
-            .limit(Number(limit));
+            .skip((page - 1) * limit)
+            .limit(limit);
 
         const total = await Blog.countDocuments(filter);
 
@@ -74,9 +77,9 @@ export const getAllPosts = async (req, res) => {
             data: posts,
             pagination: {
                 total,
-                page: Number(page),
-                limit: Number(limit),
-                totalPages: Math.ceil(total / Number(limit)),
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
             },
         });
     } catch (error) {
@@ -89,7 +92,11 @@ export const getAllPosts = async (req, res) => {
  */
 export const getPostBySlug = async (req, res) => {
     try {
-        const post = await Blog.findOne({ slug: req.params.slug });
+        // Drafts are hidden from the public unless ?includeDrafts=true (used by the admin edit view)
+        const filter = { slug: req.params.slug };
+        if (req.query.includeDrafts !== "true") filter.published = true;
+
+        const post = await Blog.findOne(filter);
 
         if (!post) {
             return res.status(404).json({ success: false, message: "Post not found" });
@@ -251,6 +258,10 @@ export const updatePost = async (req, res) => {
             keptImages = [...keptImages, ...newImages];
         }
 
+        if (keptImages.length === 0) {
+            return res.status(400).json({ success: false, message: "A post needs at least one image" });
+        }
+
         post.images = keptImages;
         post.updatedDate = Date.now();
 
@@ -262,5 +273,26 @@ export const updatePost = async (req, res) => {
             return res.status(409).json({ success: false, message: "A post with this slug already exists" });
         }
         res.status(500).json({ success: false, message: "Failed to update post", error: error.message });
+    }
+};
+
+/**
+ * DELETE /api/blog/delete/:slug
+ * Removes the post and its Cloudinary images.
+ */
+export const deletePost = async (req, res) => {
+    try {
+        const post = await Blog.findOne({ slug: req.params.slug });
+
+        if (!post) {
+            return res.status(404).json({ success: false, message: "Post not found" });
+        }
+
+        await Blog.deleteOne({ _id: post._id });
+        await deleteMultipleFromCloudinary(post.images);
+
+        res.status(200).json({ success: true, message: "Post deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Failed to delete post", error: error.message });
     }
 };

@@ -9,7 +9,10 @@ import {
     ChevronRight,
     Plus,
 } from "lucide-react";
+import { toast } from "react-toastify";
 import "./Productlists.css";
+import "./EditProductModal.css";
+import EditProductModal from "./EditProductModal";
 import { Context } from "../../context/Context";
 
 const FILTERS = ["All Items", "floral", "woody", "musk", "oud", "citrus", "spicy"];
@@ -36,6 +39,7 @@ const STOCK_LABEL = { out: "Out of Stock", low: "Low Stock Alert", ok: "In Stock
  * (attarModel) into the shape the table UI expects.
  */
 const normalizeProduct = (product) => ({
+    raw: product, // full document, used to pre-fill the edit form
     id: product._id,
     name: product.name,
     slug: product.slug,
@@ -74,8 +78,10 @@ const Productlists = () => {
     const [currentPage, setCurrentPage] = useState(1);
 
     const { API_URL } = useContext(Context);
-    
-    
+
+    const [editing, setEditing] = useState(null);   // normalized product being edited
+    const [deleting, setDeleting] = useState(null); // normalized product awaiting delete confirm
+    const [deleteBusy, setDeleteBusy] = useState(false);
 
     // Fetches ALL products (admin view — active + inactive) using axios
     const getAllAttars = useCallback(async () => {
@@ -103,6 +109,23 @@ const Productlists = () => {
             setLoading(false);
         }
     }, [API_URL, searchTerm, activeFilter, stockFilter, currentPage]);
+
+    const confirmDelete = async () => {
+        if (!deleting) return;
+        setDeleteBusy(true);
+        try {
+            const res = await axios.delete(`${API_URL}/api/product/${deleting.id}`);
+            toast.success(res.data?.message || "Product deleted");
+            setDeleting(null);
+            // If that was the last item on this page, step back one page
+            if (products.length === 1 && currentPage > 1) setCurrentPage((p) => p - 1);
+            else getAllAttars();
+        } catch (err) {
+            toast.error(err.response?.data?.message || err.message || "Failed to delete product");
+        } finally {
+            setDeleteBusy(false);
+        }
+    };
 
     // Debounce search so we don't fire a request on every keystroke
     useEffect(() => {
@@ -287,12 +310,17 @@ const Productlists = () => {
                                     </div>
 
                                     <div className="product-row__actions" data-label="Actions">
-                                        <button className="icon-btn" aria-label={`Edit ${product.name}`}>
+                                        <button
+                                            className="icon-btn"
+                                            aria-label={`Edit ${product.name}`}
+                                            onClick={() => setEditing(product)}
+                                        >
                                             <Pencil size={16} />
                                         </button>
                                         <button
                                             className="icon-btn icon-btn--danger"
                                             aria-label={`Delete ${product.name}`}
+                                            onClick={() => setDeleting(product)}
                                         >
                                             <Trash2 size={16} />
                                         </button>
@@ -341,6 +369,53 @@ const Productlists = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Edit modal */}
+            {editing && (
+                <EditProductModal
+                    product={editing.raw}
+                    apiUrl={API_URL}
+                    onClose={() => setEditing(null)}
+                    onSaved={() => {
+                        setEditing(null);
+                        getAllAttars();
+                    }}
+                />
+            )}
+
+            {/* Delete confirmation */}
+            {deleting && (
+                <div className="modal-backdrop" onMouseDown={() => !deleteBusy && setDeleting(null)}>
+                    <div
+                        className="modal modal--sm"
+                        role="alertdialog"
+                        aria-modal="true"
+                        aria-label={`Delete ${deleting.name}`}
+                        onMouseDown={(e) => e.stopPropagation()}
+                    >
+                        <div className="modal__header">
+                            <h2 className="modal__title">Delete product?</h2>
+                        </div>
+                        <p className="modal__text">
+                            <strong>{deleting.name}</strong> and its images will be permanently
+                            removed. Past orders keep their own copy of the item details. This
+                            can&apos;t be undone.
+                        </p>
+                        <div className="modal__footer">
+                            <button
+                                className="mbtn-ghost"
+                                onClick={() => setDeleting(null)}
+                                disabled={deleteBusy}
+                            >
+                                Cancel
+                            </button>
+                            <button className="mbtn-danger" onClick={confirmDelete} disabled={deleteBusy}>
+                                {deleteBusy ? "Deleting…" : "Delete"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

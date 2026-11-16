@@ -145,17 +145,33 @@ export const updateAttarproduct = async (req, res) => {
             return res.status(404).json({ message: "Product not found" });
         }
 
-        // If new images are uploaded, add them (or replace — your choice)
+        // Images: drop the ones the admin removed, append any newly uploaded ones
+        const removedIds = updates.removedImages ? JSON.parse(updates.removedImages) : [];
+        delete updates.removedImages;
+        const removedImages = product.images.filter((img) => removedIds.includes(img.public_id));
+
+        let newImages = [];
         if (req.files && req.files.length > 0) {
             const uploadResults = await Promise.all(
                 req.files.map((file) => uploadToCloudinary(file.buffer))
             );
-            const newImages = uploadResults.map((result) => ({
+            newImages = uploadResults.map((result) => ({
                 url: result.secure_url,
                 public_id: result.public_id,
             }));
-            updates.images = [...product.images, ...newImages]; // append; use just newImages to replace
         }
+
+        if (removedImages.length > 0 || newImages.length > 0) {
+            const keptImages = product.images.filter((img) => !removedIds.includes(img.public_id));
+            const finalImages = [...keptImages, ...newImages];
+            if (finalImages.length === 0) {
+                return res.status(400).json({ message: "A product needs at least one image" });
+            }
+            updates.images = finalImages;
+        }
+
+        // seo arrives as a JSON string from form-data
+        if (typeof updates.seo === "string") updates.seo = JSON.parse(updates.seo);
 
         // Re-generate slug if name changed
         if (updates.name && updates.name !== product.name) {
@@ -166,12 +182,24 @@ export const updateAttarproduct = async (req, res) => {
         }
 
         if (updates.tags) updates.tags = JSON.parse(updates.tags);
-        if (updates.variants) updates.variants = JSON.parse(updates.variants);
+        if (updates.variants) {
+            // keep each variant's _id (orders reference variantId); drop empty sku
+            updates.variants = JSON.parse(updates.variants).map((v) => {
+                const variant = { ...v };
+                if (!variant.sku || String(variant.sku).trim() === "") delete variant.sku;
+                return variant;
+            });
+        }
 
         const updatedProduct = await Product.findByIdAndUpdate(id, updates, {
             new: true,
             runValidators: true,
         });
+
+        // Remove deleted images from Cloudinary only after the DB update succeeded
+        await Promise.allSettled(
+            removedImages.map((img) => cloudinary.uploader.destroy(img.public_id))
+        );
 
         return res.status(200).json({ message: "Product updated", product: updatedProduct });
     } catch (error) {
@@ -192,7 +220,8 @@ export const deleteAttarproduct = async (req, res) => {
 
         // Remove all associated images from Cloudinary
         if (product.images && product.images.length > 0) {
-            await Promise.all(
+            // a Cloudinary hiccup shouldn't block deleting the product itself
+            await Promise.allSettled(
                 product.images.map((img) => cloudinary.uploader.destroy(img.public_id))
             );
         }

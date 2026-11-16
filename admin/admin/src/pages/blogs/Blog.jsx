@@ -3,6 +3,7 @@ import "./Blog.css";
 import { useContext } from "react";
 import { Context } from "../../context/Context";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 
 
@@ -10,7 +11,7 @@ const MAX_IMAGES = 6;
 const CATEGORIES = ["News", "Guides", "Behind the Scenes", "Product Launch", "Lifestyle"];
 
 export default function Blog() {
-    const {API_URl} = useContext(Context)
+    const {API_URL} = useContext(Context)
 
 
   const [images, setImages] = useState([]); // [{ file, preview, alt }]
@@ -63,7 +64,7 @@ export default function Blog() {
     if (files.length === 0) return;
 
     if (images.length + files.length > MAX_IMAGES) {
-      alert(`You can upload up to ${MAX_IMAGES} images per post.`, "error");
+      toast.error(`You can upload up to ${MAX_IMAGES} images per post.`);
       e.target.value = "";
       return;
     }
@@ -133,7 +134,7 @@ export default function Blog() {
     const errors = validate();
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
-      alert("Fix the highlighted fields before publishing.", "error");
+      toast.error("Fix the highlighted fields before publishing.");
       return;
     }
 
@@ -141,12 +142,12 @@ export default function Blog() {
     try {
       const formData = buildFormData();
 
-      await axios.post(`${API_URl}/api/blog/create`, formData, {
+      await axios.post(`${API_URL}/api/blog/create`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true, // remove if your Auth doesn't rely on cookies
       });
 
-      alert("Post published.", "success");
+      toast.success("Post published.");
       setForm({
         title: "",
         slug: "",
@@ -165,7 +166,7 @@ export default function Blog() {
       setSlugTouched(false);
       setFieldErrors({});
     } catch (err) {
-      alert(err?.response?.data?.message || err.message || "Something went wrong. Try again.");
+      toast.error(err?.response?.data?.message || err.message || "Something went wrong. Try again.");
     } finally {
       setSubmitting(false);
     }

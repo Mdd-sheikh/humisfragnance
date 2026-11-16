@@ -1,30 +1,111 @@
+import { useState, useEffect, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { blogPosts } from "../../../assets/Assests";
+import axios from "axios";
+import { Context } from "../../../context/Context";
+import { mapPost } from "../blogApi";
 import "./Blogdetail.css";
 
 const BlogDetail = () => {
     const { slug } = useParams();
     const navigate = useNavigate();
+    const { API_URL } = useContext(Context);
 
-    const post = blogPosts.find((p) => p.slug === slug);
+    const [post, setPost] = useState(null);
+    const [related, setRelated] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [notFound, setNotFound] = useState(false);
+    const [error, setError] = useState(null);
 
-    // Fallback content paragraphs if the data source doesn't provide a
-    // dedicated "content" array — splits the excerpt so the page still
-    // renders something reasonable.
-    const paragraphs =
-        post?.content && post.content.length > 0
-            ? post.content
-            : post
-                ? [post.excerpt]
-                : [];
+    useEffect(() => {
+        const controller = new AbortController();
+        const { signal } = controller;
 
-    const related = post
-        ? blogPosts
-            .filter((p) => p.slug !== post.slug && p.category === post.category)
-            .slice(0, 3)
-        : [];
+        const load = async () => {
+            setLoading(true);
+            setNotFound(false);
+            setError(null);
+            setPost(null);
+            setRelated([]);
+            try {
+                const res = await axios.get(`${API_URL}/blog/get/${encodeURIComponent(slug)}`, { signal });
+                const current = mapPost(res.data.data);
+                setPost(current);
+                window.scrollTo(0, 0);
 
-    if (!post) {
+                // "More like this": same category, newest first. Failure here is non-fatal.
+                try {
+                    const list = await axios.get(`${API_URL}/blog/getallposts`, {
+                        params: { published: true, category: current.category, limit: 4 },
+                        signal,
+                    });
+                    setRelated(
+                        (list.data?.data ?? [])
+                            .map(mapPost)
+                            .filter((p) => p.slug !== current.slug)
+                            .slice(0, 3)
+                    );
+                } catch {
+                    /* ignore */
+                }
+            } catch (err) {
+                if (axios.isCancel(err)) return;
+                if (err.response?.status === 404) setNotFound(true);
+                else setError(err.response?.data?.message || "We couldn't load this story right now.");
+            } finally {
+                if (!signal.aborted) setLoading(false);
+            }
+        };
+
+        load();
+        return () => controller.abort();
+    }, [API_URL, slug]);
+
+    // Page title + meta description for SEO / browser tab
+    useEffect(() => {
+        if (!post) return;
+        const previousTitle = document.title;
+        document.title = post.metaTitle || `${post.title} | Humi's Fragrance Journal`;
+
+        let meta = document.querySelector('meta[name="description"]');
+        const createdMeta = !meta;
+        const previousDescription = meta?.getAttribute("content");
+        if (!meta) {
+            meta = document.createElement("meta");
+            meta.setAttribute("name", "description");
+            document.head.appendChild(meta);
+        }
+        meta.setAttribute("content", post.metaDescription || post.excerpt || "");
+
+        return () => {
+            document.title = previousTitle;
+            if (createdMeta) meta.remove();
+            else if (previousDescription !== null) meta.setAttribute("content", previousDescription);
+        };
+    }, [post]);
+
+    if (loading) {
+        return (
+            <div className="blog-detail-page">
+                <p className="blog-detail-state">Loading story…</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="blog-detail-page">
+                <div className="blog-detail-notfound">
+                    <h1>Something went wrong</h1>
+                    <p>{error}</p>
+                    <Link to="/blog" className="blog-read-more">
+                        &larr; Back to The Journal
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    if (notFound || !post) {
         return (
             <div className="blog-detail-page">
                 <div className="blog-detail-notfound">
@@ -37,6 +118,9 @@ const BlogDetail = () => {
             </div>
         );
     }
+
+    // If the post has no body text, fall back to the excerpt so the page isn't empty
+    const paragraphs = post.paragraphs.length > 0 ? post.paragraphs : [post.excerpt];
 
     return (
         <div className="blog-detail-page">
@@ -62,13 +146,6 @@ const BlogDetail = () => {
                 )}
                 {post.author && (
                     <div className="blog-detail-author">
-                        {post.authorImage && (
-                            <img
-                                src={post.authorImage}
-                                alt={post.author}
-                                className="blog-detail-author__avatar"
-                            />
-                        )}
                         <span className="blog-detail-author__name">
                             By {post.author}
                         </span>
@@ -85,6 +162,14 @@ const BlogDetail = () => {
                     <p key={index}>{para}</p>
                 ))}
             </article>
+
+            {post.extraImages.length > 0 && (
+                <div className="blog-detail-gallery">
+                    {post.extraImages.map((img) => (
+                        <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
+                    ))}
+                </div>
+            )}
 
             {related.length > 0 && (
                 <section className="blog-detail-related">
