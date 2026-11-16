@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import {
     Search,
-    SlidersHorizontal,
     Pencil,
     Trash2,
     ChevronLeft,
@@ -13,9 +12,24 @@ import {
 import "./Productlists.css";
 import { Context } from "../../context/Context";
 
-const FILTERS = ["All Items", "Attar", "EDP", "Sets"];
+const FILTERS = ["All Items", "floral", "woody", "musk", "oud", "citrus", "spicy"];
 const ITEMS_PER_PAGE = 10;
 const LOW_STOCK_THRESHOLD = 5;
+// Stock bar is full at this many units
+const HEALTHY_STOCK_LEVEL = 50;
+const STOCK_FILTERS = [
+    { value: "", label: "All stock" },
+    { value: "in", label: "In stock" },
+    { value: "low", label: "Low stock" },
+    { value: "out", label: "Out of stock" },
+];
+
+const getStockState = (stock) => {
+    if (stock <= 0) return "out";
+    if (stock <= LOW_STOCK_THRESHOLD) return "low";
+    return "ok";
+};
+const STOCK_LABEL = { out: "Out of Stock", low: "Low Stock Alert", ok: "In Stock" };
 
 /**
  * Normalizes a raw product document from the backend
@@ -27,7 +41,14 @@ const normalizeProduct = (product) => ({
     slug: product.slug,
     image: product.images?.[0]?.url ?? "",
     category: product.category,
-    stock: product.stock ?? 0,
+    stock: product.variants?.length
+        ? product.variants.reduce((sum, v) => sum + (v.stock ?? 0), 0)
+        : product.stock ?? 0,
+    variants: (product.variants ?? []).map((v) => ({
+        id: v._id,
+        size: v.size,
+        stock: v.stock ?? 0,
+    })),
     price: product.price,
     discountPrice: product.discountPrice,
     isActive: product.isActive,
@@ -37,12 +58,14 @@ const mapResponse = (data) => ({
     items: (data.products ?? []).map(normalizeProduct),
     total: data.total ?? 0,
     totalPages: data.totalPages ?? 1,
-    stats: data.stats ?? { active: 0, inactive: 0, outOfStock: 0 },
+    stats: data.stats ?? { active: 0, inactive: 0, outOfStock: 0, lowStock: 0 },
 });
 
 const Productlists = () => {
     const [products, setProducts] = useState([]);
     const [totalItems, setTotalItems] = useState(0);
+    const [stats, setStats] = useState({ active: 0, inactive: 0, outOfStock: 0, lowStock: 0 });
+    const [stockFilter, setStockFilter] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -59,15 +82,17 @@ const Productlists = () => {
         setLoading(true);
         setError(null);
         try {
-            
+            const params = { page: currentPage, limit: ITEMS_PER_PAGE };
             if (searchTerm.trim()) params.search = searchTerm.trim();
             if (activeFilter !== "All Items") params.category = activeFilter;
+            if (stockFilter) params.stock = stockFilter;
 
-            const res = await axios.get(`${API_URL}/api/product/getallatter`);
+            const res = await axios.get(`${API_URL}/api/product/getallatter`, { params });
 
-            const { items, total } = mapResponse(res.data);
+            const { items, total, stats } = mapResponse(res.data);
             setProducts(items);
             setTotalItems(total);
+            setStats(stats);
         } catch (err) {
             setError(
                 err.response?.data?.message || err.message || "Something went wrong"
@@ -77,7 +102,7 @@ const Productlists = () => {
         } finally {
             setLoading(false);
         }
-    }, [API_URL, searchTerm, activeFilter, currentPage]);
+    }, [API_URL, searchTerm, activeFilter, stockFilter, currentPage]);
 
     // Debounce search so we don't fire a request on every keystroke
     useEffect(() => {
@@ -90,7 +115,7 @@ const Productlists = () => {
     // Reset to page 1 whenever the search term or filter changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, activeFilter]);
+    }, [searchTerm, activeFilter, stockFilter]);
 
     const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
     const rangeStart = totalItems === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1;
@@ -118,6 +143,22 @@ const Productlists = () => {
                 </button></Link>
             </div>
 
+            {/* Stock summary */}
+            <div className="stock-summary">
+                <div className="stock-summary__tile">
+                    <span className="stock-summary__label">Active Products</span>
+                    <span className="stock-summary__value">{stats.active}</span>
+                </div>
+                <div className="stock-summary__tile">
+                    <span className="stock-summary__label">Low Stock</span>
+                    <span className="stock-summary__value stock-summary__value--warn">{stats.lowStock}</span>
+                </div>
+                <div className="stock-summary__tile">
+                    <span className="stock-summary__label">Out of Stock</span>
+                    <span className="stock-summary__value stock-summary__value--danger">{stats.outOfStock}</span>
+                </div>
+            </div>
+
             {/* Search + filters */}
             <div className="product-list__toolbar">
                 <div className="search-box">
@@ -137,15 +178,21 @@ const Productlists = () => {
                             className={`filter-pill${activeFilter === filter ? " filter-pill--active" : ""}`}
                             onClick={() => setActiveFilter(filter)}
                         >
-                            {filter}
+                            {filter === "All Items" ? filter : filter.charAt(0).toUpperCase() + filter.slice(1)}
                         </button>
                     ))}
                 </div>
 
-                <button className="advanced-btn">
-                    <SlidersHorizontal size={15} />
-                    Advanced
-                </button>
+                <select
+                    className="stock-select"
+                    value={stockFilter}
+                    onChange={(e) => setStockFilter(e.target.value)}
+                    aria-label="Filter by stock level"
+                >
+                    {STOCK_FILTERS.map((f) => (
+                        <option key={f.value} value={f.value}>{f.label}</option>
+                    ))}
+                </select>
             </div>
 
             {/* Table */}
@@ -178,7 +225,8 @@ const Productlists = () => {
                     {!loading &&
                         !error &&
                         products.map((product) => {
-                            const isLowStock = product.stock <= LOW_STOCK_THRESHOLD;
+                            const state = getStockState(product.stock);
+                            const pct = Math.min(100, (product.stock / HEALTHY_STOCK_LEVEL) * 100);
                             return (
                                 <div className="product-row" key={product.id}>
                                     <div className="product-row__product" data-label="Product">
@@ -200,17 +248,42 @@ const Productlists = () => {
                                     </div>
 
                                     <div data-label="Stock">
-                                        <p className={`stock-line${isLowStock ? " stock-line--low" : ""}`}>
+                                        <p className={`stock-line stock-line--${state}`}>
                                             <span className="stock-dot" />
-                                            {product.stock} Units
+                                            {product.stock} {product.stock === 1 ? "unit" : "units"} left
                                         </p>
-                                        <p className={`stock-status${isLowStock ? " stock-status--low" : ""}`}>
-                                            {isLowStock ? "Low Stock Alert" : "Status: Healthy"}
+                                        <div
+                                            className="stock-bar"
+                                            role="progressbar"
+                                            aria-valuenow={product.stock}
+                                            aria-valuemin={0}
+                                            aria-valuemax={HEALTHY_STOCK_LEVEL}
+                                            aria-label={`${product.name} stock`}
+                                        >
+                                            <div
+                                                className={`stock-bar__fill stock-bar__fill--${state}`}
+                                                style={{ width: `${pct}%` }}
+                                            />
+                                        </div>
+                                        <p className={`stock-status stock-status--${state}`}>
+                                            {STOCK_LABEL[state]}
                                         </p>
+                                        {product.variants.length > 0 && (
+                                            <div className="variant-chips">
+                                                {product.variants.map((v) => (
+                                                    <span
+                                                        key={v.id ?? v.size}
+                                                        className={`variant-chip variant-chip--${getStockState(v.stock)}`}
+                                                    >
+                                                        {v.size}: {v.stock}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="product-row__price" data-label="Price">
-                                        ${Number(product.price).toFixed(2)}
+                                        ₹{Number(product.price).toFixed(2)}
                                     </div>
 
                                     <div className="product-row__actions" data-label="Actions">

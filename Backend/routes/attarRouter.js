@@ -11,9 +11,9 @@ const Attarrouter = express.Router();
 
 Attarrouter.post("/create", upload.array("images", 5), createAttarproduct);
 Attarrouter.get("/get", getAttarproduct);
+Attarrouter.get("/getallatter", getAllAttarproduct);
 Attarrouter.get("/:id", getSingleAttarproduct);
 Attarrouter.put("/:id",Auth, upload.array("images", 5), updateAttarproduct);
 Attarrouter.delete("/:id",Auth, deleteAttarproduct);
-Attarrouter.get("/getallatter", getAllAttarproduct);
 
 export default Attarrouter;

@@ -9,6 +9,7 @@ import Profilerouter from './routes/profileRouter.js';
 import AddressRouter from './routes/addressRoute.js';
 import placeorderRouter from './routes/placeorderRouter.js';
 import BlogRoute from './routes/BlogRoute.js';
+import dashboardRouter from './routes/dashboardRouter.js';
 
 dotenv.config()
 
@@ -28,6 +29,7 @@ app.use("/api/profile",Profilerouter);
 app.use("/api/personal/address",AddressRouter);
 app.use("/api/order", placeorderRouter); 
 app.use("/api/blog",BlogRoute)
+app.use("/api/dashboard", dashboardRouter);
 
 
 

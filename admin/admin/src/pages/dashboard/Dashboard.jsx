@@ -1,7 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import {
     BarChart,
     Bar,
+    LineChart,
+    Line,
+    CartesianGrid,
     XAxis,
     YAxis,
     Tooltip,
@@ -16,56 +19,43 @@ import {
     SlidersHorizontal,
     Package,
 } from "lucide-react";
+import { Context } from "../../context/Context";
 import "./Dashboard.css";
 
-/**
- * Expects a backend endpoint returning JSON shaped like:
- * {
- *   stats: {
- *     totalRevenue: 42500,
- *     revenueChangePct: 12,
- *     totalOrders: 1200,
- *     dailyTargetPct: 85,
- *     activeCustomers: 850,
- *     newCustomersToday: 42,
- *     lowStock: 12
- *   },
- *   recentOrders: [
- *     { id: "ORD-9021", customer: "Sofia V.", price: 240.0, status: "shipped" }
- *   ]
- * }
- *
- * Adjust API_URL and field names in mapResponse() to match your API.
- */
-const API_URL = "/api/dashboard";
+const formatCompactMoney = (value) => {
+    if (value >= 10000000) return `₹${(value / 10000000).toFixed(1)}Cr`;
+    if (value >= 100000) return `₹${(value / 100000).toFixed(1)}L`;
+    if (value >= 1000) return `₹${(value / 1000).toFixed(1)}k`;
+    return `₹${value}`;
+};
 
-// Bar chart uses dummy placeholder data per request — swap for real
-// monthly revenue figures from the backend when ready.
-const MONTHLY_REVENUE = [
-    { month: "Jan", revenue: 28400 },
-    { month: "Feb", revenue: 31200 },
-    { month: "Mar", revenue: 27600 },
-    { month: "Apr", revenue: 42500 },
-    { month: "May", revenue: 35800 },
-    { month: "Jun", revenue: 39100 },
+const PERIODS = [
+    { key: "week", label: "Week", hint: "Sales per week, last 12 weeks" },
+    { key: "month", label: "Month", hint: "Sales per month, last 12 months" },
+    { key: "year", label: "Year", hint: "Sales per year, last 5 years" },
 ];
 
-const CURRENT_MONTH = "Apr";
-
-const formatCompactMoney = (value) => {
-    if (value >= 1000) return `$${(value / 1000).toFixed(1)}k`;
-    return `$${value}`;
-};
-
 const STATUS_BADGE = {
-    pending: "badge--pending",
-    shipped: "badge--shipped",
-    completed: "badge--completed",
+    placed: "badge--pending",
+    shipment_created: "badge--shipped",
+    picked_up: "badge--shipped",
+    in_transit: "badge--shipped",
+    out_for_delivery: "badge--shipped",
+    delivered: "badge--completed",
+    cancelled: "badge--cancelled",
+    rto: "badge--cancelled",
 };
+
+const formatStatus = (status = "") =>
+    status.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 
 const Dashboard = () => {
+    const { API_URL } = useContext(Context);
     const [stats, setStats] = useState(null);
+    const [monthlyRevenue, setMonthlyRevenue] = useState([]);
     const [recentOrders, setRecentOrders] = useState([]);
+    const [salesTrend, setSalesTrend] = useState({ week: [], month: [], year: [] });
+    const [period, setPeriod] = useState("month");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -73,17 +63,19 @@ const Dashboard = () => {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(API_URL);
+            const res = await fetch(`${API_URL}/api/dashboard`);
             if (!res.ok) throw new Error("Failed to load dashboard data");
             const data = await res.json();
             setStats(data.stats ?? null);
+            setMonthlyRevenue(data.monthlyRevenue ?? []);
             setRecentOrders(data.recentOrders ?? []);
+            setSalesTrend(data.salesTrend ?? { week: [], month: [], year: [] });
         } catch (err) {
             setError(err.message || "Something went wrong");
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [API_URL]);
 
     useEffect(() => {
         fetchDashboard();
@@ -117,13 +109,11 @@ const Dashboard = () => {
                 <div className="stat-tile">
                     <span className="stat-tile__label">Total Orders</span>
                     <span className="stat-tile__value">
-                        {loading
-                            ? "—"
-                            : `${((stats?.totalOrders ?? 0) / 1000).toFixed(1)}k`}
+                        {loading ? "—" : stats?.totalOrders ?? 0}
                     </span>
                     <span className="stat-tile__footnote">
                         <ShoppingCart size={13} />
-                        {loading ? "" : `Daily Target: ${stats?.dailyTargetPct ?? 0}%`}
+                        {loading ? "" : `${stats?.ordersToday ?? 0} placed today`}
                     </span>
                 </div>
 
@@ -150,6 +140,74 @@ const Dashboard = () => {
                 </div>
             </div>
 
+            {/* Sales trend line chart */}
+            <div className="panel">
+                <div className="panel__header">
+                    <div>
+                        <h2 className="panel__title">Sales Trend</h2>
+                        <p className="panel__subtitle">
+                            {PERIODS.find((p) => p.key === period)?.hint}
+                        </p>
+                    </div>
+                    <div className="segmented" role="tablist" aria-label="Sales period">
+                        {PERIODS.map((p) => (
+                            <button
+                                key={p.key}
+                                role="tab"
+                                aria-selected={period === p.key}
+                                className={`segmented__btn ${period === p.key ? "is-active" : ""}`}
+                                onClick={() => setPeriod(p.key)}
+                            >
+                                {p.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="chart-wrap">
+                    <ResponsiveContainer width="100%" height={280}>
+                        <LineChart data={salesTrend[period]} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                            <CartesianGrid stroke="var(--border-color)" strokeDasharray="3 3" vertical={false} />
+                            <XAxis
+                                dataKey="label"
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 11, fill: "var(--text-secondary)" }}
+                            />
+                            <YAxis
+                                width={52}
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 11, fill: "var(--text-secondary)" }}
+                                tickFormatter={formatCompactMoney}
+                            />
+                            <Tooltip
+                                formatter={(value, name) =>
+                                    name === "sales"
+                                        ? [`₹${Number(value).toLocaleString("en-IN")}`, "Sales"]
+                                        : [value, "Orders"]
+                                }
+                                contentStyle={{
+                                    fontFamily: "var(--font-body)",
+                                    fontSize: "0.8rem",
+                                    border: "1px solid var(--border-color)",
+                                    borderRadius: "8px",
+                                }}
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey="sales"
+                                stroke="var(--color-primary-light)"
+                                strokeWidth={2.5}
+                                dot={{ r: 3, fill: "var(--color-primary-light)" }}
+                                activeDot={{ r: 5 }}
+                            />
+                            <Line dataKey="orders" stroke="transparent" dot={false} activeDot={false} legendType="none" />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
+
             {/* Monthly revenue chart */}
             <div className="panel">
                 <div className="panel__header">
@@ -162,17 +220,22 @@ const Dashboard = () => {
 
                 <div className="chart-wrap">
                     <ResponsiveContainer width="100%" height={260}>
-                        <BarChart data={MONTHLY_REVENUE} barCategoryGap="32%">
+                        <BarChart data={monthlyRevenue} barCategoryGap="32%">
                             <XAxis
                                 dataKey="month"
                                 axisLine={false}
                                 tickLine={false}
-                                tick={(props) => <MonthTick {...props} />}
+                                tick={(props) => (
+                                    <MonthTick
+                                        {...props}
+                                        currentMonth={monthlyRevenue.find((m) => m.isCurrent)?.month}
+                                    />
+                                )}
                             />
                             <YAxis hide />
                             <Tooltip
                                 cursor={{ fill: "var(--bg-muted)" }}
-                                formatter={(value) => [`$${value.toLocaleString()}`, "Revenue"]}
+                                formatter={(value) => [`₹${value.toLocaleString("en-IN")}`, "Revenue"]}
                                 contentStyle={{
                                     fontFamily: "var(--font-body)",
                                     fontSize: "0.8rem",
@@ -181,11 +244,11 @@ const Dashboard = () => {
                                 }}
                             />
                             <Bar dataKey="revenue" radius={[6, 6, 0, 0]} maxBarSize={42}>
-                                {MONTHLY_REVENUE.map((entry) => (
+                                {monthlyRevenue.map((entry) => (
                                     <Cell
-                                        key={entry.month}
+                                        key={`${entry.month}-${entry.isCurrent}`}
                                         fill={
-                                            entry.month === CURRENT_MONTH
+                                            entry.isCurrent
                                                 ? "var(--color-primary-light)"
                                                 : "var(--bg-muted)"
                                         }
@@ -225,14 +288,14 @@ const Dashboard = () => {
                                 <div className="recent-order__info">
                                     <p className="recent-order__id">#{order.id}</p>
                                     <p className="recent-order__meta">
-                                        {order.customer} • ${Number(order.price).toFixed(2)}
+                                        {order.customer} • ₹{Number(order.price).toLocaleString("en-IN")}
                                     </p>
                                 </div>
 
                                 <span
                                     className={`badge ${STATUS_BADGE[order.status] ?? "badge--pending"}`}
                                 >
-                                    {order.status?.charAt(0).toUpperCase() + order.status?.slice(1)}
+                                    {formatStatus(order.status)}
                                 </span>
                             </div>
                         ))}
@@ -243,8 +306,8 @@ const Dashboard = () => {
 };
 
 // Custom X-axis tick so the current month can be styled/colored distinctly
-const MonthTick = ({ x, y, payload }) => {
-    const isCurrent = payload.value === CURRENT_MONTH;
+const MonthTick = ({ x, y, payload, currentMonth }) => {
+    const isCurrent = payload.value === currentMonth;
     return (
         <text
             x={x}

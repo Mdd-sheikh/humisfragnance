@@ -291,11 +291,13 @@
     background: var(--color-primary-dark);
 }
 
-.stock-line--low .stock-dot {
+.stock-line--low .stock-dot,
+.stock-line--out .stock-dot {
     background: var(--error);
 }
 
-.stock-line--low {
+.stock-line--low,
+.stock-line--out {
     color: var(--error);
 }
 
@@ -307,7 +309,8 @@
     letter-spacing: 0.03em;
 }
 
-.stock-status--low {
+.stock-status--low,
+.stock-status--out {
     color: var(--error);
 }
 
@@ -469,4 +472,94 @@
     .filter-pills {
         width: 100%;
     }
+}
+
+/* Stock summary tiles */
+.stock-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.stock-summary__tile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.8rem 1rem;
+}
+
+.stock-summary__label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.stock-summary__value {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.stock-summary__value--warn { color: var(--color-primary); }
+.stock-summary__value--danger { color: var(--error); }
+
+.stock-select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-card);
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    color: var(--text-primary);
+}
+
+/* Stock bar */
+.stock-bar {
+    width: 100%;
+    max-width: 160px;
+    height: 6px;
+    margin: 0.4rem 0 0.3rem;
+    border-radius: 999px;
+    background: var(--bg-muted);
+    overflow: hidden;
+}
+
+.stock-bar__fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+.stock-bar__fill--ok { background: #3f6b3f; }
+.stock-bar__fill--low { background: var(--color-primary-light); }
+.stock-bar__fill--out { background: var(--error); }
+
+.variant-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.4rem;
+}
+
+.variant-chip {
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.variant-chip--low { border-color: var(--color-primary-light); color: var(--color-primary-dark); }
+.variant-chip--out { border-color: var(--error); color: var(--error); }
+
+@media (max-width: 480px) {
+    .stock-summary { grid-template-columns: 1fr; }
 }

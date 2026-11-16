@@ -210,6 +210,17 @@ export const deleteAttarproduct = async (req, res) => {
 
 
 
+// Total units left for a product: sum of variant stock when it has variants,
+// otherwise the product-level stock field.
+const TOTAL_STOCK_EXPR = {
+    $cond: [
+        { $gt: [{ $size: { $ifNull: ["$variants", []] } }, 0] },
+        { $sum: "$variants.stock" },
+        { $ifNull: ["$stock", 0] },
+    ],
+};
+const LOW_STOCK_THRESHOLD = 5;
+
 // ---------------- GET ALL (ADMIN) ----------------
 // Returns every product regardless of isActive status,
 // with extra filters/sorting useful for the admin dashboard.
@@ -236,8 +247,16 @@ export const getAllAttarproduct = async (req, res) => {
         if (status === "inactive") filter.isActive = false;
 
         // Admin can filter by stock availability
-        if (stock === "in") filter.stock = { $gt: 0 };
-        if (stock === "out") filter.stock = { $lte: 0 };
+        if (stock === "in") filter.$expr = { $gt: [TOTAL_STOCK_EXPR, 0] };
+        if (stock === "out") filter.$expr = { $lte: [TOTAL_STOCK_EXPR, 0] };
+        if (stock === "low") {
+            filter.$expr = {
+                $and: [
+                    { $gt: [TOTAL_STOCK_EXPR, 0] },
+                    { $lte: [TOTAL_STOCK_EXPR, LOW_STOCK_THRESHOLD] },
+                ],
+            };
+        }
 
         const sort = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
 
@@ -249,10 +268,18 @@ export const getAllAttarproduct = async (req, res) => {
         const total = await Product.countDocuments(filter);
 
         // Quick summary stats for the admin dashboard
-        const [activeCount, inactiveCount, outOfStockCount] = await Promise.all([
+        const [activeCount, inactiveCount, outOfStockCount, lowStockCount] = await Promise.all([
             Product.countDocuments({ isActive: true }),
             Product.countDocuments({ isActive: false }),
-            Product.countDocuments({ stock: { $lte: 0 } }),
+            Product.countDocuments({ $expr: { $lte: [TOTAL_STOCK_EXPR, 0] } }),
+            Product.countDocuments({
+                $expr: {
+                    $and: [
+                        { $gt: [TOTAL_STOCK_EXPR, 0] },
+                        { $lte: [TOTAL_STOCK_EXPR, LOW_STOCK_THRESHOLD] },
+                    ],
+                },
+            }),
         ]);
 
         return res.status(200).json({
@@ -264,6 +291,7 @@ export const getAllAttarproduct = async (req, res) => {
                 active: activeCount,
                 inactive: inactiveCount,
                 outOfStock: outOfStockCount,
+                lowStock: lowStockCount,
             },
         });
     } catch (error) {

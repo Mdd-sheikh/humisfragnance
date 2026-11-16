@@ -260,9 +260,43 @@
   color: var(--text-secondary);
 }
 
+.badge--cancelled {
+  background: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+}
+
 .badge--completed {
   background: var(--success-bg);
   color: var(--success);
+}
+
+/* Period toggle */
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.segmented__btn {
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.segmented__btn + .segmented__btn {
+  border-left: 1px solid var(--border-color);
+}
+
+.segmented__btn.is-active {
+  background: var(--color-primary-light);
+  color: var(--text-primary);
 }
 
 /* ---------- Responsive ---------- */
